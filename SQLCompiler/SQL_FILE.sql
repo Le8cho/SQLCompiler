@@ -1,0 +1,9 @@
+-- #Script SQL Demo
+#hola ### hola ###
+-- hola
+--                  holagolg 123 123
+SELEcT T8787878   ######	## Todos los campos 
+from empleado       #Tabla Empelado
+where Name          like '*io' #Termina en io --hola
+
+
