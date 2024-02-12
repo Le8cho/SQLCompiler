@@ -17,6 +17,8 @@ public class SQLFileReader {
             String linea;
 
             while ((linea = sqlBuffer.readLine()) != null) {
+                
+                //Eliminar comentarios #
                 int P = -1;
                 //Encontraremos la primera ocurrencia de '#' en la linea recuperada
                 P = posSimbolo(linea, 0, '#', 1);
@@ -25,7 +27,8 @@ public class SQLFileReader {
                     //Solo recuperamos lo que está antes del char '#'
                     linea = linea.substring(0, P);
                 }
-
+                
+                //Eliminar los comentarios -- 
                 P = -2;
                 P = posSimbolo(linea, 0, '-', 2);
                 
@@ -78,8 +81,8 @@ public class SQLFileReader {
                             posSimbolo = indexCadena;
                         }
                         case 2 -> {
-                            //El simbolo es --
-                            if (cadena.charAt(indexCadena + 1) == ' ') {
+                            //El simbolo es -- y lo que le sigue es un espacio en blanco
+                            if (cadena.charAt(indexCadena - 1) == simbolo && cadena.charAt(indexCadena + 1) == ' ') {
                                 posSimbolo = indexCadena - 1;
                             }
                         }
