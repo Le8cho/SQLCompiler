@@ -11,6 +11,7 @@ public class SQLFileReader {
     public static String readFile(String ruta) {
 
         String sqlString = "";
+//        String regex = "/\\\\*\\\\*?[^*]*\\\\*+(?:[^/*][^*]*\\\\*+)*/\n";
 
         try {
             BufferedReader sqlBuffer = new BufferedReader(new FileReader(ruta, StandardCharsets.UTF_8));
@@ -33,6 +34,8 @@ public class SQLFileReader {
         } catch (IOException E) {
 
         }
+
+        sqlString = removeComments(sqlString);
         return sqlString;
     }
 
@@ -59,6 +62,35 @@ public class SQLFileReader {
         }
 
         return nuevaLinea;
+    }
+
+    public static String removeComments(String sqlString) {
+        StringBuilder cleanedSql = new StringBuilder();
+        boolean insideComment = false;
+        boolean insideQuotes = false;
+        char[] characters = sqlString.toCharArray();
+
+        for (int i = 0; i < characters.length; i++) {
+            char currentChar = characters[i];
+
+            if (currentChar == '"') {
+                insideQuotes = !insideQuotes;
+            } else if (!insideQuotes) {
+                if (!insideComment && currentChar == '/' && i < characters.length - 1 && characters[i + 1] == '*') {
+                    insideComment = true;
+                    i++;
+                } else if (insideComment && currentChar == '*' && i < characters.length - 1 && characters[i + 1] == '/') {
+                    insideComment = false;
+                    i++;
+                } else if (!insideComment) {
+                    cleanedSql.append(currentChar);
+                }
+            } else {
+                cleanedSql.append(currentChar);
+            }
+        }
+
+        return cleanedSql.toString();
     }
 
     //----------------------------------------
