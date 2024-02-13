@@ -17,26 +17,9 @@ public class SQLFileReader {
             String linea;
 
             while ((linea = sqlBuffer.readLine()) != null) {
-                
-                //Eliminar comentarios #
-                int P = -1;
-                //Encontraremos la primera ocurrencia de '#' en la linea recuperada
-                P = posSimbolo(linea, 0, '#', 1);
-                //Es decir se encontro el char en la linea
-                if (P != -1) {
-                    //Solo recuperamos lo que está antes del char '#'
-                    linea = linea.substring(0, P);
-                }
-                
-                //Eliminar los comentarios -- 
-                P = -2;
-                P = posSimbolo(linea, 0, '-', 2);
-                
-                if (P != -1) {
-                    //Solo recuperamos lo que está antes del char '#'
-                    linea = linea.substring(0, P);
-                }
-                
+
+                linea = eliminarComentariosLineales(linea);
+
                 //Borramos cualquier espacio en blanco al inicio o final
                 linea = linea.trim();
                 //Si la linea leida no esta vacia o en blanco
@@ -44,12 +27,38 @@ public class SQLFileReader {
                     //Concatenamos esa linea a TEXT
                     sqlString = sqlString.concat(linea).concat(" ");
                 }
+
             }
 
         } catch (IOException E) {
 
         }
         return sqlString;
+    }
+
+    private static String eliminarComentariosLineales(String lineaTexto) {
+        String nuevaLinea = lineaTexto;
+
+        //Eliminar comentarios #
+        int P = -1;
+        //Encontraremos la primera ocurrencia de '#' en la linea recuperada
+        P = posSimbolo(nuevaLinea, 0, '#', 1);
+        //Es decir se encontro el char en la linea
+        if (P != -1) {
+            //Solo recuperamos lo que está antes del char '#'
+            nuevaLinea = nuevaLinea.substring(0, P);
+        }
+
+        //Eliminar los comentarios -- 
+        P = -1;
+        P = posSimbolo(nuevaLinea, 0, '-', 2);
+
+        if (P != -1 && nuevaLinea.charAt(P - 1) == nuevaLinea.charAt(P) && nuevaLinea.charAt(P + 1) == ' ') {
+            //Solo recuperamos lo que está antes del char '--'
+            nuevaLinea = nuevaLinea.substring(0, P-1);
+        }
+
+        return nuevaLinea;
     }
 
     //----------------------------------------
@@ -65,7 +74,7 @@ public class SQLFileReader {
         int contadorOcurrencias = 0;
         //posSimbolo donde se halle el simbolo de la cadena, 0 por default
         int posSimbolo = -1;
-        //longCadena longitudde la cadena
+        //longCadena longitud de la cadena
         int longCadena = cadena.length();
 
         //Recorrer la cadena
@@ -75,27 +84,17 @@ public class SQLFileReader {
                 contadorOcurrencias++;
                 //Si contador llego al orden de ocurrencias que buscamos
                 if (contadorOcurrencias == ordenOcurrencia) {
-                    //Actualizar P
-                    switch (ordenOcurrencia) {
-                        case 1 -> {
-                            posSimbolo = indexCadena;
-                        }
-                        case 2 -> {
-                            //El simbolo es -- y lo que le sigue es un espacio en blanco
-                            if (cadena.charAt(indexCadena - 1) == simbolo && cadena.charAt(indexCadena + 1) == ' ') {
-                                posSimbolo = indexCadena - 1;
-                            }
-                        }
-                    }
-                }
+                    //Actualizar posSimbolo
+                    posSimbolo = indexCadena;
+                } 
             }
             indexCadena++;
         }
-        //Retorna P que es el indice donde se encuentra la primera ocurrencia
+        //Retorna P que es el indice donde se encuentra la ultima ocurrencia
         return posSimbolo;
     }
-    //----------------------------------------
 
+    //----------------------------------------
     //Funcion Locate 3 que busca la halla la posicion inicila de un cadena T en una cadena S, F es el numero de ocurrencia
     public static int Locate3(String S, String T, int F) {
         int i, C, k, N, P;
