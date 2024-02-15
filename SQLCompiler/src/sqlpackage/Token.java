@@ -1,15 +1,41 @@
-
 package sqlpackage;
 
 public class Token {
-    private TipoToken tipo;
-    private String tokenValor;
 
-    public TipoToken getTipo() {
+    private String tipo = null;
+    private String tokenValor = null;
+    private int index = -1; 
+
+    public Token() {
+    }
+
+    public Token(String tipo, String tokenValor, int index) {
+        this.tipo = tipo;
+        this.tokenValor = tokenValor;
+        this.index = index;
+    }
+
+    @Override
+    public String toString() {
+        return "('" + tipo + "', " + tokenValor + ", '" + index + "')";
+    }
+    
+    
+    
+    
+    public String getTipo() {
         return tipo;
     }
 
-    public void setTipo(TipoToken tipo) {
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public void setTipo(String tipo) {
         this.tipo = tipo;
     }
 
@@ -20,9 +46,5 @@ public class Token {
     public void setTokenValor(String tokenValor) {
         this.tokenValor = tokenValor;
     }
-    
-    public Token (TipoToken tipo, String tokenValor){
-        this.tipo = tipo;
-        this.tokenValor = tokenValor;
-    }
+
 }
