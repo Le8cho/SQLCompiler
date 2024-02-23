@@ -1,6 +1,7 @@
 
 package sqlpackage;
 
+import cola.Cola;
 import java.util.ArrayList;
 
 public class SQLCompiler {
@@ -9,9 +10,10 @@ public class SQLCompiler {
         String sqlCode = SQLFileReader.readFile(sqlFilePath).toUpperCase();
         System.out.println(sqlCode);
         
-        ArrayList<Token> tokens = Tokens.lex(sqlCode);
+        Cola<Token> tokenList = Tokens.lex(sqlCode);
         
-        System.out.println(tokens.toString());
+        tokenList.imprimirCola();
+        
         
     }   
 }
