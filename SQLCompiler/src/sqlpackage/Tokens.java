@@ -40,16 +40,18 @@ public class Tokens {
 
     //Operators
     public static final String EQUAL = "=";
-    public static final String[] NOT_EQUAL = {"<>", "!="};
     public static final String LESS = "<";
-    public static final String LESS_EQUAL = "<=";
     public static final String GREATER = ">";
+    public static final String OPEN_P = "(";
+    public static final String CLOSE_P = ")";
+    public static final String[] NOT_EQUAL = {"<>", "!="};
+    public static final String LESS_EQUAL = "<=";
     public static final String GREATER_EQUAL = ">=";
+
+    //Special Symbols
     public static final String COMMA = ",";
     public static final String SEMICOLON = ";";
     public static final String PUNTO = ".";
-    public static final String OPEN_P = "(";
-    public static final String CLOSE_P = ")";
 
     //ID
     public static final String ID = "ID";
@@ -158,24 +160,80 @@ public class Tokens {
 
     }
 
+    //Si empieza con uno de estos chars significa que hemos detectado un simbolo
+    public static boolean isAOperator(char tokenChar) {
+
+        return tokenChar == EQUAL.charAt(0)
+                || tokenChar == LESS.charAt(0)
+                || tokenChar == LESS.charAt(0)
+                || tokenChar == GREATER.charAt(0)
+                || tokenChar == OPEN_P.charAt(0)
+                || tokenChar == CLOSE_P.charAt(0)
+                || tokenChar == NOT_EQUAL[1].charAt(0) //!
+                || tokenChar == ASTERISK.charAt(0); //El asterisco es tanto para multiplicar como columnas
+    }
+
+    ;
+
     public static Cola<Token> lex(String input) {
 
         Cola<Token> tokenList = new Cola<>();
         ArrayList<Token> tokensList = new ArrayList<>();
 
-        int i = 0;
+        int index = 0;
         int inputLength = input.length();
         String lexeme = "";
         Token token = null;
 
-        while (i < inputLength) {
+        while (index < inputLength) {
 
-            char tokenChar = input.charAt(i);
+            char tokenChar = input.charAt(index);
 
             if (!isAWhitespace(tokenChar) && tokenChar != COMMA.charAt(0) && tokenChar != PUNTO.charAt(0)) {
                 //Si el token no es espacio en blanco o una coma o un punto
                 //seguir formando el lexema
                 lexeme = lexeme + tokenChar;
+
+            } //Si no es un espacio en blanco ver si es un operador < = > 
+            else if (isAOperator(tokenChar)) {
+                //No tenemos ningun token pendiente
+                if (lexeme.length() == 0) {
+                    switch (tokenChar) {
+                        case '=' ->
+                            token = new Token(EQUAL, "=", index);
+                        case '(' ->
+                            token = new Token(OPEN_P, "(", index);
+                        case ')' ->
+                            token = new Token(CLOSE_P, ")", index);
+                        case '<' -> {
+                            int nextIndex = index + 1;
+                            if (nextIndex == input.length()) {
+                                token = new Token(LESS, "<", index);
+                            } else if (input.charAt(nextIndex) == '>') {
+                                token = new Token(NOT_EQUAL[0], "<>", index);
+                                index = nextIndex;
+                            } else if (input.charAt(nextIndex) == '=') {
+                                token = new Token(LESS_EQUAL, "<=", index);
+                                index = nextIndex;
+                            }
+                        }
+                        case '>' -> {
+                            int nextIndex = index + 1;
+                            if (nextIndex == input.length()) {
+                                token = new Token(GREATER, ">", index);
+                            }
+                            else if (input.charAt(nextIndex) == '=') {
+                                token = new Token(GREATER_EQUAL, ">=", index);
+                                index = nextIndex;
+                            }
+                        }
+                        
+                        default -> {
+                        }
+                    }
+                } else {
+
+                }
 
             } else {
                 //Quiere decir que hemos encontrado un espacio en blanco una coma o un punto
@@ -183,18 +241,16 @@ public class Tokens {
                 if (lexeme.length() != 0) {
                     //El lexema es una keyword?    
                     if (isKeyword(lexeme)) {
-                        token = new Token(lexeme, lexeme, i);
-                    } 
-                    //Es un identificador?
+                        token = new Token(lexeme, lexeme, index);
+                    } //Es un identificador?
                     else if (isIdentifier(lexeme)) {
-                        token = new Token(ID, lexeme, i);
-                    } 
-                    //Si no es identificador es Numero
+                        token = new Token(ID, lexeme, index);
+                    } //Si no es identificador es Numero
                     else if (isNumber(lexeme)) {
-                        token = new Token(NUMBER, lexeme, i);
+                        token = new Token(NUMBER, lexeme, index);
                     } //Si no es un numero es un string
                     else if (isString(lexeme)) {
-                        token = new Token(STRING, lexeme, i);
+                        token = new Token(STRING, lexeme, index);
                     }
 
                     //Token irreconocible
@@ -206,13 +262,13 @@ public class Tokens {
                     tokenList.agregar(token);
                     //Reseteamos el lexema
                     lexeme = "";
-                    
+
                     //Capturamos el token actual puede ser coma punto o espacio
                     if (tokenChar == COMMA.charAt(0)) {
-                        Token tokenComma = new Token(COMMA, ",", i);
+                        Token tokenComma = new Token(COMMA, ",", index);
                         tokenList.agregar(tokenComma);
                     } else if (tokenChar == PUNTO.charAt(0)) {
-                        Token tokenPunto = new Token(PUNTO, ".", i);
+                        Token tokenPunto = new Token(PUNTO, ".", index);
                         tokenList.agregar(tokenPunto);
                     } else if (isAWhitespace(tokenChar)) {
                         //Skip
@@ -221,7 +277,7 @@ public class Tokens {
 
             }
 
-            i++;
+            index++;
         }
 
         return tokenList;
