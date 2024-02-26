@@ -12,3 +12,4 @@ from empleado       #Tabla Empelado
 where Name          like '*io' #Termina en io --hola
 
 
+
