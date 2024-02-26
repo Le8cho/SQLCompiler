@@ -16,21 +16,21 @@ public class Cola<E> {
     public void imprimirCola(){
         NodoCola nodo = this.cabeza;
         
-        String cola = "[";
+        String colaString = "[";
         
         while(nodo != null){
-            cola = cola.concat(nodo.toString()).concat(",");
+            colaString = colaString.concat(nodo.toString()).concat(",");
             nodo = nodo.getSiguiente();
         }
         
-        cola = cola.substring(0, cola.length()-1);
-        cola = cola.concat("]");
+        colaString = colaString.substring(0, colaString.length()-1);
+        colaString = colaString.concat("]");
         
         if(this.estaVacio()){
-            cola = "[]";
+            colaString = "[]";
         }
         
-        System.out.println(cola);
+        System.out.println(colaString);
   
     }
 
