@@ -1,0 +1,43 @@
+@startuml
+start
+:INICIO;
+
+partition "Interfaz Gráfica" {
+    :Recibir sentencia SQL;
+}
+
+partition "Catalog_DAT" {
+    
+    partition "SM_DAT" {
+        :Carga las tablas en memoria desde la interfaz gráfica;
+        
+        if (¿Carga correcta?) then (sí)
+            :Análisis Léxico;
+            
+            if (¿Es correcto el léxico?) then (sí)
+                :Análisis Sintáctico;
+                
+                if (¿Es correcta la sentencia?) then (sí)
+                    :Análisis Semántico;
+                    
+                    if (¿Instrucciones a ejecutar?) then (sí)
+                        :Ejecutar consulta;
+                        
+                        :Mostrar tablas en interfaz gráfica;
+                    else (no)
+                        :Mostrar error;
+                    endif
+                else (no)
+                    :Mostrar error sintáctico;
+                endif
+            else (no)
+                :Mostrar error léxico;
+            endif
+        else (no)
+            :Mostrar error de carga;
+        endif
+    }
+}
+:FIN;
+stop
+@enduml
