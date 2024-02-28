@@ -1,4 +1,4 @@
-package sqlpackage;
+package analizador_lexico;
 
 public class Token {
 

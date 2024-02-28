@@ -1,4 +1,4 @@
-package cola;
+package EDD;
 
 public class Cola<E> {
 

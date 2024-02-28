@@ -1,7 +1,7 @@
 
 package hola;
 
-import cola.Cola;
+import EDD.Cola;
 
 
 public class pruebaCola {
