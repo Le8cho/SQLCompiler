@@ -1,6 +1,6 @@
-package sqlpackage;
+package analizador_lexico;
 
-import cola.Cola;
+import EDD.Cola;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
