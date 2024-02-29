@@ -4,9 +4,11 @@ public class Cola<E> {
 
     private NodoCola cabeza;
     private NodoCola cola;
+    private int size;
 
     public Cola() {
         cabeza = null;
+        size = 0;
     }
     
     public Cola(E dato){
