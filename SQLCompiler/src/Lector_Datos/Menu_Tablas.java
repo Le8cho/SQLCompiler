@@ -4,6 +4,11 @@
  */
 package Lector_Datos;
 
+import EDD.Cola;
+import analizador_lexico.Token;
+import analizador_lexico.Tokens;
+import análisis_sintáctico.Sintáctico;
+import ejecución_sentencias.Ejecución;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 
@@ -25,6 +30,7 @@ public class Menu_Tablas extends javax.swing.JFrame {
         obtenerModeloTabla(baseTabla.get(0).getNombreTabla());
     }
     
+    
     private void llenarComboBox() {
         
         for (Tabla ta : baseTabla) {
@@ -33,8 +39,7 @@ public class Menu_Tablas extends javax.swing.JFrame {
         
         selectTablaComboBox.setSelectedItem(0);
     }
-    
-    
+        
     
     private void obtenerModeloTabla(String nombre){
  
@@ -91,6 +96,8 @@ public class Menu_Tablas extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaJTable = new javax.swing.JTable();
         selectTablaComboBox = new javax.swing.JComboBox<>();
+        jTextField1 = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -104,26 +111,49 @@ public class Menu_Tablas extends javax.swing.JFrame {
             }
         });
 
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("EJECUTAR");
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jButton1MousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(105, 105, 105)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 634, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(53, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(selectTablaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(233, 233, 233))
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 719, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 633, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                                .addGap(136, 136, 136)
+                                .addComponent(selectTablaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(12, 12, 12))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addComponent(selectTablaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                .addContainerGap(28, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(selectTablaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -145,13 +175,53 @@ public class Menu_Tablas extends javax.swing.JFrame {
         obtenerModeloTabla(selectTablaComboBox.getSelectedItem().toString());
     }//GEN-LAST:event_selectTablaComboBoxActionPerformed
 
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void jButton1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MousePressed
+        
+        //Extraer el codigo SQL en mayusculas (el analizador lexico lo requiere) .toUpperCase()
+        
+        String sqlCode = jTextField1.getText().toUpperCase();
+
+        System.out.println(sqlCode);    
+        
+        Cola<Token> tokenList = Tokens.lex(sqlCode);
+
+        tokenList.imprimirCola();
+
+        Sintáctico sint = new Sintáctico(tokenList);
+        Object[] parametros;
+        
+        parametros = new Object[6];
+         
+        // DEBUG
+        System.out.println(sint.parser().length);
+        
+        parametros = sint.parser();
+      
+        // DEBUG
+        System.out.println(sint.contar_elementos(parametros));
+        
+        // DEBUG
+        for (int i = 0 ; i < sint.contar_elementos(parametros) ; i++) {
+            System.out.print(parametros[i] + " ");
+        }   
+        Ejecución ej = new Ejecución(baseTabla);
+        DefaultTableModel mo = ej.crear_modelo_tabla(parametros, sint.contar_elementos(parametros));
+        tablaJTable.setModel(mo);
+    }//GEN-LAST:event_jButton1MousePressed
+
     /**
      * @param args the command line arguments
      */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JComboBox<String> selectTablaComboBox;
     private javax.swing.JTable tablaJTable;
     // End of variables declaration//GEN-END:variables

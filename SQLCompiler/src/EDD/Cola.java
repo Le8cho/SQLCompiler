@@ -88,6 +88,18 @@ public class Cola<E> {
         }
     }
 
+    public E buscar_por_orden(int numero_nodo) {
+        
+        NodoCola nodo = this.cabeza;
+        int contador = 0;
+        
+        while (contador < numero_nodo) {
+            nodo = nodo.getSiguiente();
+            contador++;
+        }
+        return (E) nodo.getDato();
+    }
+    
     public boolean estaVacio() {
         return this.cabeza == null;
     }

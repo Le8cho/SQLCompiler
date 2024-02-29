@@ -249,8 +249,8 @@ public class Lector_Datos {
                         //el codigo de la tabla son 2 chars
                         String codeTable = linea.substring(0,2);
                         //sumamos +2 chars vacios + 1 char delimitador
-                        //el nombre de la tabla empieza a partir del indice 5 y son 10 chars;
-                        String nameTable = linea.substring(5,15);
+                        //el nombre de la tabla empieza a partir del indice 5 y son 10 chars quitamos espacios en blanco si hubieran
+                        String nameTable = linea.substring(5,15).trim();
                         String[] cabecera = {codeTable, nameTable}; 
                         
                         this.crearTabla(cabecera);
@@ -258,17 +258,18 @@ public class Lector_Datos {
                         estado = 1;     // ESTADO DE RECIBIR REGISTROS
                         
                     } else {
+                        //Quitaremos los espacios en blanco si se requiere
                         contAtributo++; 
                         //El codigo del atributo empieza en el indice 0 y tiene longitud 4 chars
-                        String codeAttribute = linea.substring(0,4);
+                        String codeAttribute = linea.substring(0,4).trim();
                         //Sumamos +1 char delimitador y el nombre del atributo es de 10 chars;
-                        String nameAttribute = linea.substring(5,15);
+                        String nameAttribute = linea.substring(5,15).trim();
                         //sumamos +1 char delimitador y el tipo es de 1 solo char
-                        String typeAttribute = linea.substring(16,17);
+                        String typeAttribute = linea.substring(16,17).trim();
                         //sumamos +1 char delimitador y la longitud del atributo se expresa en 2 chars
-                        String lengthAttribute = linea.substring(18,20);
+                        String lengthAttribute = linea.substring(18,20).trim();
                         //sumamos +1 char delimitador y los decimales del atributo se expresa en 2 chars
-                        String decAttribute = linea.substring(21,23);
+                        String decAttribute = linea.substring(21,23).trim();
 
                         String[] atributo = {codeAttribute, nameAttribute, typeAttribute, lengthAttribute, decAttribute};
                         

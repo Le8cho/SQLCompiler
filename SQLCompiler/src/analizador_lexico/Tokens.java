@@ -200,13 +200,25 @@ public class Tokens {
 
             tokenChar = input.charAt(index);
 
-            if (!isAWhitespace(tokenChar) && !isAPunctuation(tokenChar) && !isAOperator(tokenChar)) {
-                //Si el token un char STOP
+            //mientras el tokenchar no sea un espacio en blanco, una puntuacion, un operador o estemos en el ultimo
+            if (!isAWhitespace(tokenChar) && !isAPunctuation(tokenChar) && !isAOperator(tokenChar) && index != inputLength - 1) {
+                //Si el token no es un char STOP
                 //seguir formando el lexema
                 lexeme = lexeme + tokenChar;
 
             } else {
-                //Quiere decir que hemos encontrado un char STOP: espacio, puntuacion o operador
+                //RECONOCIMIENTO DE TOKENS
+
+                //Si estamos al final de la sentencia
+                if (index == inputLength - 1) {
+                    //agregamos el caracter pendiente que no atrapamos en el primer if (caso especial)
+                    //verificamos que no sea un whitespace
+                    if (!isAWhitespace(tokenChar)) {
+                        lexeme = lexeme + tokenChar;
+                    }
+                }
+
+                //Quiere decir que hemos encontrado un char STOP: espacio, puntuacion o operador o nos encontramos al final de la cadena
                 //analizamos si hay un token pendiente por analizar al momento de hacer STOP
                 if (lexeme.length() != 0) {
                     //El lexema es una keyword? //prioridad de palabras    
@@ -236,89 +248,87 @@ public class Tokens {
                 }
 
                 //Haya token pendiente o no, evaluamos el char STOP tokenChar
-                if (isAOperator(tokenChar)) {
-                    switch (tokenChar) {
-                        case '+' -> {
-                            token = new Token(PLUS, "+", index);
-                        }
-                        case '-' -> {
-                            token = new Token(MINUS, "-", index);
-                        }
-                        case '/' -> {
-                            token = new Token(DIV, "/", index);
-                        }
-                        case '=' -> {
-                            token = new Token(EQUAL, "=", index);
-                        }
-                        case '(' -> {
-                            token = new Token(OPEN_P, "(", index);
-                        }
-                        case '*' -> {
-                            token = new Token(ASTERISK, "*", index);
-                        }
-                        case ')' -> {
-                            token = new Token(CLOSE_P, ")", index);
-                        }
-                        case '<' -> {
-                            int nextIndex = index + 1;
-                            if (nextIndex == input.length()) {
-                                token = new Token(LESS, "<", index);
-                            } else if (input.charAt(nextIndex) == '>') {
-                                token = new Token(NOT_EQUAL[0], "<>", index);
-                                index = nextIndex;
-                            } else if (input.charAt(nextIndex) == '=') {
-                                token = new Token(LESS_EQUAL, "<=", index);
-                                index = nextIndex;
+                if (isAPunctuation(tokenChar) || isAOperator(tokenChar)) {
+                    if (isAOperator(tokenChar)) {
+                        switch (tokenChar) {
+                            case '+' -> {
+                                token = new Token(PLUS, "+", index);
                             }
-                        }
-                        case '>' -> {
-                            int nextIndex = index + 1;
-                            if (nextIndex == input.length()) {
-                                token = new Token(GREATER, ">", index);
-                            } else if (input.charAt(nextIndex) == '=') {
-                                token = new Token(GREATER_EQUAL, ">=", index);
-                                index = nextIndex;
+                            case '-' -> {
+                                token = new Token(MINUS, "-", index);
                             }
-                        }
-                        case '!' -> {
-                            int nextIndex = index + 1;
-                            if (nextIndex == input.length()) {
-                                throw new IllegalArgumentException("Token irreconocible" + tokenChar);
-                            } else if (input.charAt(nextIndex) == '=') {
-                                token = new Token(NOT_EQUAL[1], "!=", index);
-                                index = nextIndex;
+                            case '/' -> {
+                                token = new Token(DIV, "/", index);
                             }
+                            case '=' -> {
+                                token = new Token(EQUAL, "=", index);
+                            }
+                            case '(' -> {
+                                token = new Token(OPEN_P, "(", index);
+                            }
+                            case '*' -> {
+                                token = new Token(ASTERISK, "*", index);
+                            }
+                            case ')' -> {
+                                token = new Token(CLOSE_P, ")", index);
+                            }
+                            case '<' -> {
+                                int nextIndex = index + 1;
+                                if (nextIndex == input.length()) {
+                                    token = new Token(LESS, "<", index);
+                                } else if (input.charAt(nextIndex) == '>') {
+                                    token = new Token(NOT_EQUAL[0], "<>", index);
+                                    index = nextIndex;
+                                } else if (input.charAt(nextIndex) == '=') {
+                                    token = new Token(LESS_EQUAL, "<=", index);
+                                    index = nextIndex;
+                                }
+                            }
+                            case '>' -> {
+                                int nextIndex = index + 1;
+                                if (nextIndex == input.length()) {
+                                    token = new Token(GREATER, ">", index);
+                                } else if (input.charAt(nextIndex) == '=') {
+                                    token = new Token(GREATER_EQUAL, ">=", index);
+                                    index = nextIndex;
+                                }
+                            }
+                            case '!' -> {
+                                int nextIndex = index + 1;
+                                if (nextIndex == input.length()) {
+                                    throw new IllegalArgumentException("Token irreconocible" + tokenChar);
+                                } else if (input.charAt(nextIndex) == '=') {
+                                    token = new Token(NOT_EQUAL[1], "!=", index);
+                                    index = nextIndex;
+                                }
+                            }
+
                         }
 
+                    } else if (isAPunctuation(tokenChar)) {//Capturamos el token actual puede ser coma punto o espacio o semicolon
+
+                        switch (tokenChar) {
+                            case ',' -> {
+                                token = new Token(COMMA, ",", index);
+                            }
+                            case ';' -> {
+                                token = new Token(SEMICOLON, ";", index);
+                            }
+                            case '.' -> {
+                                token = new Token(PUNTO, ".", index);
+                            }
+                        }
                     }
 
-                } else if (isAPunctuation(tokenChar)) {//Capturamos el token actual puede ser coma punto o espacio o semicolon
-
-                    switch (tokenChar) {
-                        case ',' -> {
-                            token = new Token(COMMA, ",", index);
-                        }
-                        case ';' -> {
-                            token = new Token(SEMICOLON, ";", index);
-                        }
-                        case '.' -> {
-                            token = new Token(PUNTO, ".", index);
-                        }
-                    }
-                }
-
-                if (!isAWhitespace(tokenChar)) {
                     //Agregamos el stop tokenChar  detectado a la lista de tokens
                     tokenList.agregar(token);
-
-                } else {
-                    //No hacemos nada pues es un delimitador sin significado
                 }
 
             }
             //Seguimos iterando en el while
             index++;
         }
+
         //Retornamos la lista de tokens
         return tokenList;
     }

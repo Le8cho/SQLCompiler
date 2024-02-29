@@ -30,25 +30,25 @@ public class GUI extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        buscarCatButton = new javax.swing.JButton();
-        buscarSMButton = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("PROYECTO LYC");
 
-        buscarCatButton.setText("Buscar archivos CAT");
-        buscarCatButton.addActionListener(new java.awt.event.ActionListener() {
+        jButton2.setText("Buscar archivos CAT");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buscarCatButtonActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
 
-        buscarSMButton.setText("Buscar archivos SM");
-        buscarSMButton.addActionListener(new java.awt.event.ActionListener() {
+        jButton3.setText("Buscar archivos SM");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buscarSMButtonActionPerformed(evt);
+                jButton3ActionPerformed(evt);
             }
         });
 
@@ -60,8 +60,8 @@ public class GUI extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(154, 154, 154)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(buscarSMButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(buscarCatButton, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE))
+                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE))
                 .addContainerGap(154, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -70,9 +70,9 @@ public class GUI extends javax.swing.JFrame {
                 .addGap(14, 14, 14)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(45, 45, 45)
-                .addComponent(buscarCatButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(buscarSMButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(55, Short.MAX_VALUE))
         );
 
@@ -90,7 +90,7 @@ public class GUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void buscarCatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buscarCatButtonActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // ESCONDEMOS LA VENTANA ACTUAL
         this.setVisible(false);
         
@@ -103,9 +103,9 @@ public class GUI extends javax.swing.JFrame {
         selector.setLocationRelativeTo(null);
         
         this.dispose();
-    }//GEN-LAST:event_buscarCatButtonActionPerformed
+    }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void buscarSMButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buscarSMButtonActionPerformed
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // PARA SELECCIONAR EL ARCHIVO CON LOS DATOS
         this.setVisible(true);
         
@@ -123,15 +123,15 @@ public class GUI extends javax.swing.JFrame {
         
             this.dispose();
         }  
-    }//GEN-LAST:event_buscarSMButtonActionPerformed
+    }//GEN-LAST:event_jButton3ActionPerformed
     
     /**
      * @param args the command line arguments
      */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buscarCatButton;
-    private javax.swing.JButton buscarSMButton;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables

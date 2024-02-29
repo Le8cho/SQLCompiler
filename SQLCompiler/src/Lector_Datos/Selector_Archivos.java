@@ -31,13 +31,13 @@ public class Selector_Archivos extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        selectorArchivos = new javax.swing.JFileChooser();
+        jFileChooser1 = new javax.swing.JFileChooser();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        selectorArchivos.addActionListener(new java.awt.event.ActionListener() {
+        jFileChooser1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectorArchivosActionPerformed(evt);
+                jFileChooser1ActionPerformed(evt);
             }
         });
 
@@ -49,7 +49,7 @@ public class Selector_Archivos extends javax.swing.JFrame {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(selectorArchivos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jFileChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
@@ -58,20 +58,20 @@ public class Selector_Archivos extends javax.swing.JFrame {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(selectorArchivos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jFileChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void selectorArchivosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectorArchivosActionPerformed
+    private void jFileChooser1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jFileChooser1ActionPerformed
 
         if (evt.getActionCommand().equals(javax.swing.JFileChooser.APPROVE_SELECTION)) {
             
             switch (estado) {
                 case 0 -> { 
-                    Selector_Archivos.archivoBuffer = selectorArchivos.getSelectedFile();
+                    Selector_Archivos.archivoBuffer = jFileChooser1.getSelectedFile();
                     GUI principal = new GUI();
                     estado = 1;
                     principal.setVisible(true);
@@ -82,9 +82,9 @@ public class Selector_Archivos extends javax.swing.JFrame {
                         
                 case 1 -> {
                     System.out.println(archivoBuffer);
-                    System.out.println(selectorArchivos.getSelectedFile().getName());
+                    System.out.println(jFileChooser1.getSelectedFile().getName());
                     Lector_Datos main = new Lector_Datos();
-                    main.verificarDAT(archivoBuffer, selectorArchivos.getSelectedFile());
+                    main.verificarDAT(archivoBuffer, jFileChooser1.getSelectedFile());
                     this.dispose();
                 }
             }             
@@ -96,13 +96,13 @@ public class Selector_Archivos extends javax.swing.JFrame {
             principal.setVisible(true);
             principal.setLocationRelativeTo(null);
         }
-    }//GEN-LAST:event_selectorArchivosActionPerformed
+    }//GEN-LAST:event_jFileChooser1ActionPerformed
 
     /**
      * @param args the command line arguments
      */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JFileChooser selectorArchivos;
+    private javax.swing.JFileChooser jFileChooser1;
     // End of variables declaration//GEN-END:variables
 }

@@ -42,8 +42,8 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="154" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="buscarSMButton" max="32767" attributes="0"/>
-                      <Component id="buscarCatButton" pref="192" max="32767" attributes="0"/>
+                      <Component id="jButton3" max="32767" attributes="0"/>
+                      <Component id="jButton2" pref="192" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace pref="154" max="32767" attributes="0"/>
               </Group>
@@ -55,9 +55,9 @@
                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" pref="41" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
-                  <Component id="buscarCatButton" min="-2" pref="75" max="-2" attributes="0"/>
+                  <Component id="jButton2" min="-2" pref="75" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Component id="buscarSMButton" min="-2" pref="78" max="-2" attributes="0"/>
+                  <Component id="jButton3" min="-2" pref="78" max="-2" attributes="0"/>
                   <EmptySpace pref="55" max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -70,20 +70,20 @@
             <Property name="text" type="java.lang.String" value="PROYECTO LYC"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="buscarCatButton">
+        <Component class="javax.swing.JButton" name="jButton2">
           <Properties>
             <Property name="text" type="java.lang.String" value="Buscar archivos CAT"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buscarCatButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="buscarSMButton">
+        <Component class="javax.swing.JButton" name="jButton3">
           <Properties>
             <Property name="text" type="java.lang.String" value="Buscar archivos SM"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buscarSMButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton3ActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
