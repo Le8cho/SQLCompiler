@@ -11,15 +11,28 @@ import java.io.File;
  * @author utente
  */
 public class Selector_Archivos extends javax.swing.JFrame {
-    
+
     public static File archivoBuffer;
     public static int estado;
+
     /**
      * Creates new form Selector_Archivos
-     * 
+     *
      */
     public Selector_Archivos() {
         initComponents();
+        
+        //Nombre del fichero donde estan los datos
+        String rutaDatos = "Datos";
+        
+        //Obtenemos la ruta absoluta del proyecto
+        String rutaAbsolutaDatos = new File(rutaDatos).getAbsolutePath();
+        
+        //Print de la ruta absoulta de la carpeta Datos
+        System.out.println(rutaAbsolutaDatos);
+
+        //Configuramos el directorio del jfileChooser en la carpeta Datos
+        jFileChooser1.setCurrentDirectory(new File(rutaAbsolutaDatos));
     }
 
     /**
@@ -68,9 +81,9 @@ public class Selector_Archivos extends javax.swing.JFrame {
     private void jFileChooser1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jFileChooser1ActionPerformed
 
         if (evt.getActionCommand().equals(javax.swing.JFileChooser.APPROVE_SELECTION)) {
-            
+
             switch (estado) {
-                case 0 -> { 
+                case 0 -> {
                     Selector_Archivos.archivoBuffer = jFileChooser1.getSelectedFile();
                     GUI principal = new GUI();
                     estado = 1;
@@ -78,8 +91,7 @@ public class Selector_Archivos extends javax.swing.JFrame {
                     principal.setLocationRelativeTo(null);
                     this.dispose();
                 }
-                    
-                        
+
                 case 1 -> {
                     System.out.println(archivoBuffer);
                     System.out.println(jFileChooser1.getSelectedFile().getName());
@@ -87,11 +99,11 @@ public class Selector_Archivos extends javax.swing.JFrame {
                     main.verificarDAT(archivoBuffer, jFileChooser1.getSelectedFile());
                     this.dispose();
                 }
-            }             
+            }
         } else if (evt.getActionCommand().equals(javax.swing.JFileChooser.CANCEL_SELECTION)) {
             // SI SE SELECCIONA CANCEL, VOLVEMOS A LA PANTALLA ANTERIOR
             this.setVisible(false);
-            
+
             GUI principal = new GUI();
             principal.setVisible(true);
             principal.setLocationRelativeTo(null);
