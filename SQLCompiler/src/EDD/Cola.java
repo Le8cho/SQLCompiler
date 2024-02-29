@@ -12,7 +12,8 @@ public class Cola<E> {
     }
     
     public Cola(E dato){
-        this.agregar(dato);   
+        this.agregar(dato);
+        size = 0;
     }
     
     public void imprimirCola(){
