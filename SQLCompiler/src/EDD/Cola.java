@@ -13,7 +13,7 @@ public class Cola<E> {
     
     public Cola(E dato){
         this.agregar(dato);
-        size = 0;
+        size = 1;
     }
     
     public void imprimirCola(){
@@ -53,6 +53,7 @@ public class Cola<E> {
             nodo.setSiguiente(nuevoNodo);
             this.cola = nuevoNodo;
         }
+        size++;
     }
 
     //Remueve el primer nodo en la cola
@@ -71,6 +72,7 @@ public class Cola<E> {
             }
 
         }
+        size--;
     }
 
     public boolean buscar(E dato) {

@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Tokens {
-
+public class Tokenizer {
+    //Diccionario de Palabras
     //KEYWORDS
     public static final String SELECT = "SELECT";
     public static final String ASTERISK = "*";

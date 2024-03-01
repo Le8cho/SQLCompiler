@@ -6,7 +6,7 @@ package Lector_Datos;
 
 import EDD.Cola;
 import analizador_lexico.Token;
-import analizador_lexico.Tokens;
+import analizador_lexico.Tokenizer;
 import análisis_sintáctico.Sintáctico;
 import ejecución_sentencias.Ejecución;
 import java.util.ArrayList;
@@ -187,7 +187,7 @@ public class Menu_Tablas extends javax.swing.JFrame {
 
         System.out.println(sqlCode);    
         
-        Cola<Token> tokenList = Tokens.lex(sqlCode);
+        Cola<Token> tokenList = Tokenizer.lex(sqlCode);
 
         tokenList.imprimirCola();
 

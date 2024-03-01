@@ -13,16 +13,15 @@ import analizador_lexico.Token;
  */
 public class Sintáctico {
     
-    public static int contador_cola = 0;
-    public static Cola cola;   
+    public static int indexColaTokens = 0;
+    public static Cola colaTokens;   
     
-    public Sintáctico(Cola cola) {
-        //error corregido, cola es un atributo estatico por lo tanto se referencia a la clase no a la instancia del objeto
-        Sintáctico.cola=cola;
+    public Sintáctico(Cola colaTokens) {
+        Sintáctico.colaTokens=colaTokens;
     }
     
     public static Token token_actual() {       
-        Token token = (Token) cola.buscar_por_orden(contador_cola);             
+        Token token = (Token) colaTokens.buscar_por_orden(indexColaTokens);             
         return token;     
     }
     
@@ -39,22 +38,23 @@ public class Sintáctico {
     //TODO: Excepción diciendo que no cumple la gramática cuando el array es nulo
     public Object[] parser() {
         
-        contador_cola = 0;
+        indexColaTokens = 0;
 
         Reglas re = new Reglas();
         
         //Si la cola de tokens está vacío no hay nada que analizar
-        if (cola.estaVacio()) {
+        if (colaTokens.estaVacio()) {
             return null;
         }
         
         //Verificamos que se trate de una setencia SELECT verificando el primer token
         if(!tipo_actual().equals("SELECT")){
+            System.out.println("No es una sentencia SELECT SQL");
             return null;
         }
         
         //Avanzamos al siguiente token una vez reconocido el SELECT
-        contador_cola++;
+        indexColaTokens++;
         
         //Retornamos los parametros de la sentencia select: columnas, tabla...
         return re.select();
