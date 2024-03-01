@@ -10,31 +10,31 @@ public class Cola<E> {
         cabeza = null;
         size = 0;
     }
-    
-    public Cola(E dato){
-        this.agregar(dato);
+
+    public Cola(E dato) {
+        this.cabeza = new NodoCola(dato);
         size = 1;
     }
-    
-    public void imprimirCola(){
+
+    public void imprimirCola() {
         NodoCola nodo = this.cabeza;
-        
+
         String colaString = "[";
-        
-        while(nodo != null){
+
+        while (nodo != null) {
             colaString = colaString.concat(nodo.toString()).concat(",");
             nodo = nodo.getSiguiente();
         }
-        
-        colaString = colaString.substring(0, colaString.length()-1);
+
+        colaString = colaString.substring(0, colaString.length() - 1);
         colaString = colaString.concat("]");
-        
-        if(this.estaVacio()){
+
+        if (this.estaVacio()) {
             colaString = "[]";
         }
-        
+
         System.out.println(colaString);
-  
+
     }
 
     public void agregar(E dato) {
@@ -66,8 +66,7 @@ public class Cola<E> {
                 NodoCola nodo = this.cabeza;
                 this.cabeza = this.cabeza.getSiguiente();
                 nodo.setSiguiente(null);
-            }
-            else{
+            } else {
                 this.cabeza = null;
             }
 
@@ -94,19 +93,23 @@ public class Cola<E> {
     }
 
     public E buscar_por_orden(int numero_nodo) {
-        
+
         NodoCola nodo = this.cabeza;
         int contador = 0;
-        
+
         while (contador < numero_nodo) {
             nodo = nodo.getSiguiente();
             contador++;
         }
         return (E) nodo.getDato();
     }
-    
+
     public boolean estaVacio() {
         return this.cabeza == null;
+    }
+
+    public int getSize() {
+        return size;
     }
 
     private class NodoCola<E> {
