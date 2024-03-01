@@ -56,64 +56,16 @@ public class Ejecución {
 
         //Downcasting
         Cola<Token> colaColumnasSelect = (Cola<Token>) parametroListaColumnas;
-        
+
         System.out.println(verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado));
 
-//        // SI EL PARÁMETRO DE COLUMNA ES "*", SE SELECCIONAN TODAS LAS COLUMNAS
-//        if (columna.equals("*")) {            
-//            String[] nombreColumnas = new String[tabla_resultado.getListaAtributos().size()];
-//            
-//            for (int i = 0 ; i < tabla_resultado.getListaAtributos().size() ; i++) {
-//                nombreColumnas[i] = tabla_resultado.getListaAtributos().get(i).getNombre();
-//            }
-//        
-//            modelo.setColumnIdentifiers(nombreColumnas);  
-//            
-//            Object[] fila = new Object[modelo.getColumnCount()];
-//            
-//            //Itera el numero de registros que tenemos de las tablas == numero de filas de la tabla
-//            for (int i = 0 ; i < tabla_resultado.getListaAtributos().get(0).getListaValores().size() ; i++) { 
-//                
-//                for (int j = 0 ; j < modelo.getColumnCount() ; j++) {
-//                    
-//                    fila[j] = tabla_resultado.getListaAtributos().get(j).getListaValores().get(i);                    
-//                }
-//                modelo.addRow(fila);              
-//            } 
-//            return modelo;
-//        }
-//        // TODO: Establecer todos los demás casos con if's
-//        // EN ESTE CASO: SOLO 1 COLUMNA
-//        else {
-//            String[] nombreColumnas = new String[1];
-//            int indAtributo = 0;
-//            
-//            //Recorremos la lista de atributos
-//            for (int i = 0 ; i < tabla_resultado.getListaAtributos().size() ; i++) {
-//                //si la columna que buscamos (mayusculas) es igual al nombre del atributo de la iteracion
-//                if (columna.toUpperCase().equals(tabla_resultado.getListaAtributos().get(i).getNombre().toUpperCase())) {
-//                    //asiganmos la columna al array nombreColumnas
-//                    nombreColumnas[0] = columna;
-//                    //guardamos el indice del atributo requerido
-//                    indAtributo = i;
-//                }               
-//            }
-//            
-//            //A nuestra tabla colocamos el identificador de cada columna (En este caso solo 1)
-//            modelo.setColumnIdentifiers(nombreColumnas); 
-//            
-//            Object[] fila = new Object[modelo.getColumnCount()];
-//            
-//            //Iteramos la cantidad de valores que tiene el atributo
-//            for (int i = 0 ; i < tabla_resultado.getListaAtributos().get(indAtributo).getListaValores().size() ; i++) { 
-//                
-//                // FILAS DE SOLO 1 COLUMNA
-//                fila[0] = tabla_resultado.getListaAtributos().get(indAtributo).getListaValores().get(i);                    
-//                
-//                modelo.addRow(fila);               
-//            }  
-//            return modelo;
-//        }
+        //Si comprobamos que todas las tablas estan OK procedemos a mostrar la tabla Query
+        if (verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado)) {
+
+            insertarColumnas(colaColumnasSelect, tabla_resultado, modelo);
+
+        }
+
         return modelo;
     }
 
@@ -122,13 +74,14 @@ public class Ejecución {
         //Obtenemos la lista de atributos de la tabla
         ArrayList<Atributo> listaAtributos = tabla_resultado.getListaAtributos();
 
+        //Un valor de bandera para poder determinar si hay una columna ajena a la tabla
         boolean columnaEncontradaTabla = false;
 
         for (int i = 0; i < colaColumnasSelect.getSize(); i++) {
 
             Token columna = colaColumnasSelect.buscar_por_orden(i);
             String valorColumna = columna.getTokenValor().toUpperCase();
-            
+
             if (columna.getTipo().equals(Tokenizer.ID)) {
                 //Si es ID hacemos la busqueda
                 for (Atributo atributo : listaAtributos) {
@@ -150,6 +103,100 @@ public class Ejecución {
 
         }
         return true;
+    }
+
+    private void insertarColumnas(Cola<Token> colaColumnasSelect, Tabla tabla_resultado, DefaultTableModel modelo) {
+
+        //Obtenemos la lista de atributos de la Tabla requerida
+        ArrayList<Atributo> listaAtributos = tabla_resultado.getListaAtributos();
+
+        //Iteramos sobre cada columna obtenida de la sentencia SELECT
+        for (int i = 0; i < colaColumnasSelect.getSize(); i++) {
+
+            //Obtenemos la columna y lo que nos convenga
+            Token columna = colaColumnasSelect.buscar_por_orden(i);
+            String valorColumna = columna.getTokenValor().toUpperCase();
+            String tipoColumna = columna.getTipo().toUpperCase();
+
+            switch (tipoColumna) {
+                case Tokenizer.ID:
+                    Atributo atributoColumna = null;
+                    //Buscaremos el atributo que representa la columna
+                    for (Atributo atributo : listaAtributos) {
+                        String nombreAtributo = atributo.getNombre().toUpperCase();
+                        if (valorColumna.equals(nombreAtributo)) {
+                            atributoColumna = atributo;
+                            //salimos del for puesto que ya encontramos el atributo relacionado
+                            break;
+                        }
+                    }
+                    //insertamos la columna en la tabla con la lista de valores del atributo
+                    if (atributoColumna != null) {
+                        int sizeAtributoColumna = atributoColumna.getListaValores().size();
+                        //Creo un objeto que represente una columna
+                        Object[] columnaModelo = new Object[sizeAtributoColumna];
+
+                        //paso los valores de la lista de valores en la columna
+                        for (int fila = 0; fila < sizeAtributoColumna; fila++) {
+                            columnaModelo[fila] = atributoColumna.getListaValores().get(fila);
+                        }
+                        //añadimos la columna a la Jtable
+                        modelo.addColumn(valorColumna, columnaModelo);
+
+                    } else {
+                        System.out.println("o no hay atribut columna o no hay lista de valores");
+                    }
+
+                    break;
+
+                case Tokenizer.NUMBER:
+                case Tokenizer.STRING:
+                    insertarConstante(valorColumna, modelo, listaAtributos);
+                    break;
+                case Tokenizer.ASTERISK:
+                    //insertamos todas las columnas
+                    for (Atributo atributo : listaAtributos) {
+                        //obtenemos la cantidad de filas
+                        int sizeAtributoColumna = atributo.getListaValores().size();
+                        Object[] columnaModelo = new Object[sizeAtributoColumna];
+
+                        //paso los valores de la lista de valores en la columna
+                        for (int fila = 0; fila < sizeAtributoColumna; fila++) {
+                            columnaModelo[fila] = atributo.getListaValores().get(fila);
+                        }
+                        //añadimos la columna a la Jtable
+                        modelo.addColumn(atributo.getNombre(), columnaModelo);
+                    }
+                    break;
+
+            }
+
+        }
+
+    }
+
+    private void insertarConstante(String valorColumna, DefaultTableModel modelo, ArrayList<Atributo> listaAtributos) {
+
+        //Obtenemos la cantidad de filas o registros de un atributo cualquiera
+        int cantRegistrosTabla = listaAtributos.get(0).getListaValores().size();
+
+        //Creamos un atributo temporal falso
+        Atributo atributoColumna = new Atributo();
+        //Rellenamos la lista de valores con el valor constante
+        for (int i = 0; i < cantRegistrosTabla; i++) {
+            atributoColumna.agregarValor(valorColumna);
+        }
+
+        //Creo un objeto que represente una columna
+        Object[] columnaModelo = new Object[cantRegistrosTabla];
+
+        //paso los valores de la lista de valores en la columna
+        for (int i = 0; i < cantRegistrosTabla; i++) {
+            columnaModelo[i] = atributoColumna.getListaValores().get(i);
+        }
+        //añadimos la columna a la Jtable
+        modelo.addColumn(valorColumna, columnaModelo);
+
     }
 
 }
