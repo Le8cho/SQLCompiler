@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Tokens {
-
+public class Tokenizer {
+    //Diccionario de Palabras
     //KEYWORDS
     public static final String SELECT = "SELECT";
     public static final String ASTERISK = "*";
@@ -195,10 +195,26 @@ public class Tokens {
         String lexeme = "";
         Token token = null;
         char tokenChar;
+        boolean insideQuotes = false;
 
         while (index < inputLength) {
 
             tokenChar = input.charAt(index);
+
+            // cambiamos el estado de las comillas
+            if (tokenChar == '\'') {
+                insideQuotes = !insideQuotes;
+                lexeme = lexeme + tokenChar;
+                index++;
+                continue;
+            }
+
+            // Si estamos dentro de un string, seguimos fomrando el lexema
+            if (insideQuotes) {
+                lexeme = lexeme + tokenChar;
+                index++;
+                continue;
+            }
 
             //mientras el tokenchar no sea un espacio en blanco, una puntuacion, un operador o estemos en el ultimo
             if (!isAWhitespace(tokenChar) && !isAPunctuation(tokenChar) && !isAOperator(tokenChar) && index != inputLength - 1) {

@@ -6,7 +6,7 @@ package Lector_Datos;
 
 import EDD.Cola;
 import analizador_lexico.Token;
-import analizador_lexico.Tokens;
+import analizador_lexico.Tokenizer;
 import análisis_sintáctico.Sintáctico;
 import ejecución_sentencias.Ejecución;
 import java.util.ArrayList;
@@ -187,17 +187,16 @@ public class Menu_Tablas extends javax.swing.JFrame {
 
         System.out.println(sqlCode);    
         
-        Cola<Token> tokenList = Tokens.lex(sqlCode);
+        Cola<Token> tokenList = Tokenizer.lex(sqlCode);
 
         tokenList.imprimirCola();
 
         Sintáctico sint = new Sintáctico(tokenList);
-        Object[] parametros;
+        Object[] parametros = new Object[6];
         
-        parametros = new Object[6];
          
         // DEBUG
-        System.out.println(sint.parser().length);
+//        System.out.println(sint.parser().length);
         
         parametros = sint.parser();
       
@@ -207,7 +206,11 @@ public class Menu_Tablas extends javax.swing.JFrame {
         // DEBUG
         for (int i = 0 ; i < sint.contar_elementos(parametros) ; i++) {
             System.out.print(parametros[i] + " ");
-        }   
+        }
+        
+        Cola<Token> colaColumna = (Cola<Token>) parametros[0];
+        
+        colaColumna.imprimirCola();
         Ejecución ej = new Ejecución(baseTabla);
         DefaultTableModel mo = ej.crear_modelo_tabla(parametros, sint.contar_elementos(parametros));
         tablaJTable.setModel(mo);
