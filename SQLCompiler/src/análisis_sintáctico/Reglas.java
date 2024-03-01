@@ -22,8 +22,9 @@ public class Reglas {
         if (!lista_columnas()) {
             return null;
         }
-        Sintáctico.indexColaTokens++;
         //Si el siguiente token es diferente de FROM retornar null
+        System.out.println(Sintáctico.tipo_actual());
+        System.out.println(Sintáctico.token_actual());
         if (!Sintáctico.tipo_actual().equals("FROM")) {
             return null;
         }
@@ -54,10 +55,11 @@ public class Reglas {
             //col1, col2... coln FROM
             //traemos el tipo del token actual
             tipoToken = Sintáctico.tipo_actual();
-            if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER)) {
+            
+            if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING)) {
                 //Si es un token y no se esta esperando una columna
                 if (!esperaColumna) {
-                    System.out.println("Error gramatical: Se esperaba" + Tokenizer.COMMA);
+                    System.out.println("Error gramatical, se esperaba :" + Tokenizer.COMMA);
                     return false;
                 }
                 //Si se se esperaba una columna agregar el token ya sea ID, * , number o string
@@ -79,6 +81,7 @@ public class Reglas {
                 //Actualizamos el esperaColumna
                 esperaColumna = true;
             } else if (tipoToken.equals(Tokenizer.FROM)) {
+                
                 if (esperaColumna) {
                     System.out.println("Error de sintaxis: Se esperaba" + Tokenizer.ID);
                     return false;
@@ -89,6 +92,10 @@ public class Reglas {
                 //Analisis gramatical de lista columnas completado (faltaria reconocer expresiones aritmeticas)
                 //actualmente solo se reconoce columnas ID y se guardan en una colaDeColumnas
                 return true;
+            }
+            else{
+                System.out.println("Error de sintaxis: Se esperaba + " + Tokenizer.FROM);
+                return false;
             }
         }
 
