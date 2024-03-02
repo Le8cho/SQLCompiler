@@ -22,9 +22,7 @@ public class Reglas {
         if (!lista_columnas()) {
             return null;
         }
-        //Si el siguiente token es diferente de FROM retornar null
-        System.out.println(Sintáctico.tipo_actual());
-        System.out.println(Sintáctico.token_actual());
+
         if (!Sintáctico.tipo_actual().equals("FROM")) {
             return null;
         }
@@ -32,6 +30,11 @@ public class Reglas {
         if (!lista_tablas()) {
             return null;
         }
+        if (!where()) {
+            //si no halla where que retorne los parametros que se han reunido hasta ahora
+            return parametros;
+        }
+
         return parametros;
     }
 
@@ -50,12 +53,12 @@ public class Reglas {
         //Array donde guardaremos las columnas que encontremos en la cola de tokens
         Cola<Token> colaColumnas = new Cola<>();
         boolean esperaColumna = true; //despues del select esperamos una columna
-        String tipoToken; 
+        String tipoToken;
         while (true) {
             //col1, col2... coln FROM
             //traemos el tipo del token actual
             tipoToken = Sintáctico.tipo_actual();
-            
+
             if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING)) {
                 //Si es un token y no se esta esperando una columna
                 if (!esperaColumna) {
@@ -81,30 +84,23 @@ public class Reglas {
                 //Actualizamos el esperaColumna
                 esperaColumna = true;
             } else if (tipoToken.equals(Tokenizer.FROM)) {
-                
+
                 if (esperaColumna) {
                     System.out.println("Error de sintaxis: Se esperaba" + Tokenizer.ID);
                     return false;
                 }
                 //Hemos llegado al final del reconocimiento lista columnas
                 parametros[0] = colaColumnas;
-                
+
                 //Analisis gramatical de lista columnas completado (faltaria reconocer expresiones aritmeticas)
                 //actualmente solo se reconoce columnas ID y se guardan en una colaDeColumnas
                 return true;
-            }
-            else{
+            } else {
                 System.out.println("Error de sintaxis: Se esperaba + " + Tokenizer.FROM);
                 return false;
             }
         }
 
-//        if (!Sintáctico.tipo_actual().equals("ID")) {
-//            if (!Sintáctico.tipo_actual().equals("*")) return false;           
-//            parametros[0] = Sintáctico.valor_actual();//agregar el asterisco como primer parametro
-//            return true;
-//        }
-//        parametros[0] = Sintáctico.valor_actual();//agregar el identificador como segundo parametro    
     }
 
     public boolean nombre_tabla() {
@@ -112,7 +108,39 @@ public class Reglas {
             return false;
         }
         parametros[1] = Sintáctico.valor_actual();
+        //Avanzamos al siguiente token
+        Sintáctico.indexColaTokens++;
         return true;
     }
 
+    public boolean where() {
+        //Implementacion del analisis sintactico de where
+        if (!Sintáctico.tipo_actual().equals(Tokenizer.WHERE)) {
+            //El token actual no es WHERE
+            //Retornar falso
+            return false;
+        }
+        //Where reconocido, avanzamos al siguiente token
+        Sintáctico.indexColaTokens++;
+        //definimos una cola de tokensLogicos
+        Cola<Token> colaTokensLogicos = new Cola<>();
+        
+        //1.Recogemos los tokens
+        while(true){
+            
+            Token token = Sintáctico.token_actual();
+            colaTokensLogicos.agregar(token);
+            //Si estamos en el ultimo indice salir del while
+            if(Sintáctico.indexColaTokens == Sintáctico.colaTokens.getSize() - 1){
+                break;
+            }
+            //Avanzar al siguiente token
+            Sintáctico.indexColaTokens++;         
+        }
+        
+        //2. Verificar que los tokens esten gramaticalmente correctos
+       //parsing de las sentencias de cola tokens
+ 
+        return false;
+    }
 }
