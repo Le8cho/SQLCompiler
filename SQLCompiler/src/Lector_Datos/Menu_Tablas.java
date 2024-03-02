@@ -209,11 +209,14 @@ public class Menu_Tablas extends javax.swing.JFrame {
         }
         
         Cola<Token> colaColumna = (Cola<Token>) parametros[0];
-        
         colaColumna.imprimirCola();
-        Ejecución ej = new Ejecución(baseTabla);
-        DefaultTableModel mo = ej.crear_modelo_tabla(parametros, sint.contar_elementos(parametros));
-        tablaJTable.setModel(mo);
+        
+        Cola<Token> colaTokensLogicos = (Cola<Token>) parametros[2];
+        colaTokensLogicos.imprimirCola();
+        
+//        Ejecución ej = new Ejecución(baseTabla);
+//        DefaultTableModel mo = ej.crear_modelo_tabla(parametros, sint.contar_elementos(parametros));
+//        tablaJTable.setModel(mo);
     }//GEN-LAST:event_jButton1MousePressed
 
     /**

@@ -204,10 +204,15 @@ public class Tokenizer {
 
             // cambiamos el estado de las comillas
             if (tokenChar == '\'') {
-                insideQuotes = !insideQuotes;
-                lexeme = lexeme + tokenChar;
-                index++;
-                continue;
+                if (index < inputLength - 1) {
+                    insideQuotes = !insideQuotes;
+                    lexeme = lexeme + tokenChar;
+                    index++;
+                    continue;
+                }
+                else if (index == inputLength - 1) {
+                    insideQuotes = !insideQuotes;
+                }
             }
 
             // Si estamos dentro de un string, seguimos fomrando el lexema

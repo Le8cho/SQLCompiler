@@ -124,23 +124,120 @@ public class Reglas {
         Sintáctico.indexColaTokens++;
         //definimos una cola de tokensLogicos
         Cola<Token> colaTokensLogicos = new Cola<>();
-        
+
         //1.Recogemos los tokens
-        while(true){
-            
+        while (true) {
+
             Token token = Sintáctico.token_actual();
             colaTokensLogicos.agregar(token);
-            //Si estamos en el ultimo indice salir del while
-            if(Sintáctico.indexColaTokens == Sintáctico.colaTokens.getSize() - 1){
+            //Si estamos en el ultimo indice y agregamos el ultimo token salir del while
+            if (Sintáctico.indexColaTokens == Sintáctico.colaTokens.getSize() - 1) {
                 break;
             }
             //Avanzar al siguiente token
-            Sintáctico.indexColaTokens++;         
+            Sintáctico.indexColaTokens++;
+        }
+
+        //2. Verificar que los tokens esten gramaticalmente correctos
+        //parsing de las sentencias de cola tokens
+        int indexColaLogico = 0;
+        boolean esperaOperando = true;
+        boolean esUltimoToken = false;
+        boolean inicioTermino = true;
+        //iteramos toda la cola de tokens logicos
+        while (indexColaLogico < colaTokensLogicos.getSize()) {
+            Token token = colaTokensLogicos.buscar_por_orden(indexColaLogico);
+            String tokenTipo = token.getTipo();
+            
+            //Estamos en el ultimo token
+            if(indexColaLogico == colaTokensLogicos.getSize() - 1){
+                esUltimoToken = true;
+            }
+            
+            if (tokenTipo.equals(Tokenizer.NOT)) {
+                
+                //El where no termina en NOT
+                if(esUltimoToken){
+                    return false;
+                }
+                if (inicioTermino) {
+                    //Consumimos el NOT, no estamos al inicio
+                    inicioTermino = false;
+                    esperaOperando = true;
+                    //Avanzamos token
+                    indexColaLogico++;
+                } else {
+                    return false;
+                }
+
+            } else if (tokenTipo.equals(Tokenizer.ID) || tokenTipo.equals(Tokenizer.NUMBER) || tokenTipo.equals(Tokenizer.STRING)) {
+                
+                if(esUltimoToken){
+                    //solo hay un token y es un ID, numero o string
+                    if(indexColaLogico == 0){
+                        break;
+                    }
+                    else{
+                        Token tokenAnterior = colaTokensLogicos.buscar_por_orden(indexColaLogico - 1);
+                        if(isAComparisonOperator(tokenAnterior.getTipo())){
+                            break;
+                        }
+                    }
+                }
+                
+                if (esperaOperando) {
+                    esperaOperando = false;
+                    inicioTermino = false;
+                    indexColaLogico++;
+                } else {
+                    System.out.println("Opeerando no esperado: " + token.getTokenValor());
+                    return false;
+                }
+            } //Si es un operador comparacion
+            else if (isAComparisonOperator(tokenTipo)) {
+                
+                if(esUltimoToken){
+                    System.out.println("Se esperaba una comparacion");
+                    return false;
+                }
+                
+                if (!esperaOperando) {
+                    esperaOperando = true;
+                    indexColaLogico++;
+                } else {
+                    return false;
+                }
+            } //Si es un operador logico
+            else if (tokenTipo.equals(Tokenizer.AND) || tokenTipo.equals(Tokenizer.OR)) {
+                
+                if(esUltimoToken){
+                    System.out.println("Se esperaba otra expresion logica");
+                    return false;
+                }
+                
+                if (!inicioTermino && !esperaOperando) {
+                    inicioTermino = true;
+                    esperaOperando = true;
+                    indexColaLogico++;
+                } else {
+                    return false;
+                }
+            }
+            else{
+                //un token incongruente para el where
+                System.out.println("Token no valido en esta expresion");
+                return false;
+            }
+
         }
         
-        //2. Verificar que los tokens esten gramaticalmente correctos
-       //parsing de las sentencias de cola tokens
- 
-        return false;
+        parametros[2] = colaTokensLogicos;
+        
+        return true;   
     }
+    
+    private boolean isAComparisonOperator(String tokenTipo){
+        return tokenTipo.equals(Tokenizer.EQUAL) || tokenTipo.equals(Tokenizer.GREATER) || tokenTipo.equals(Tokenizer.LESS) || tokenTipo.equals(Tokenizer.LESS_EQUAL) || tokenTipo.equals(Tokenizer.GREATER_EQUAL) || tokenTipo.equals(Tokenizer.NOT_EQUAL[0]) || tokenTipo.equals(Tokenizer.NOT_EQUAL[1]);
+    }
+    
 }
