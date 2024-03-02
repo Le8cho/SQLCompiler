@@ -229,33 +229,49 @@ public class Ejecución {
         //Downcasting
         //traemos el token de 'columnas' identificadas
         Cola<Token> colaColumnasSelect = (Cola<Token>) parametroListaColumnas;
-        System.out.println("Columnas del select validadas: ");
-        System.out.println(verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado));
+        colaColumnasSelect.imprimirCola();
 
         //traemos el token de columnas logicas
         Cola<Token> tokensLogicos = (Cola<Token>) parametroListaLogica;
-        System.out.println("Columnas del where validadas: ");
-        System.out.println(verificarColumnasEnTabla(tokensLogicos, tabla_resultado));
+        tokensLogicos.imprimirCola();
+
+        if (!verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado)) {
+            return null;
+        }
+
+        if (!verificarColumnasEnTabla(tokensLogicos, tabla_resultado)) {
+            return null;
+        }
 
         //ahora si, el trabajo duro
-        Cola<Object> atributosLogicos = convertirPosfija(tokensLogicos);
+        //Hemos obtenido la cola de elemntos posfijos
+        Cola<Object> colaElementosPosfijos = convertirPosfija(tokensLogicos, tabla_resultado);
+        colaElementosPosfijos.imprimirCola();
 
+        //Ahora a obtener los indices que no cumplen con la expresion booleana 
+        ArrayList<Integer> indicesCumplenWhere = obtenerIndicesWhere(colaElementosPosfijos, tabla_resultado);
+        //indices que cumplen con la condicion
+        System.out.println(indicesCumplenWhere.toString());
+
+        
+        
+        
+        
         return null;
     }
 
     //Con este metodo planeamos primero obtener la cola TokensLogicos en forma posfija
     //Luego reconocer los atributos que estan en esa cola posfija 
-    private Cola<Object> convertirPosfija(Cola<Token> tokensLogicos) {
+    private Cola<Object> convertirPosfija(Cola<Token> tokensLogicos, Tabla tabla_resultado) {
 
         //obtenemos el orden posfijo de los Tokens
         Cola<Token> tokensPosfijo = obtenerColaTokenPosfija(tokensLogicos);
-        
-        //ahora obtenemos la cola posfija de los elementos
-        Cola<Object> elementosPosfijos = new Cola<>();
-        
         tokensPosfijo.imprimirCola();
 
-        return new Cola<>();
+        //ahora obtenemos la cola posfija de Atributos y Tokens Operadores
+        Cola<Object> elementosPosfijos = obtenerColaElementosPosfijos(tokensPosfijo, tabla_resultado);
+
+        return elementosPosfijos;
     }
 
     private Cola<Token> obtenerColaTokenPosfija(Cola<Token> tokensLogicos) {
@@ -285,6 +301,7 @@ public class Ejecución {
                 case Tokenizer.LESS_EQUAL:
                 case Tokenizer.GREATER:
                 case Tokenizer.LESS:
+                case Tokenizer.NOT:
                 case Tokenizer.AND:
                 case Tokenizer.OR:
                     while (!pilaOperadores.isEmpty() && precedencia(tipoTokenActual) <= precedencia(pilaOperadores.getTope().getDato().getTipo())) {
@@ -307,10 +324,94 @@ public class Ejecución {
 
         return tokensPosfijo;
     }
-    
-    private Cola<Object> obtenerColaElementosPosfijos(Cola<Token> tokensPosfijo){
-        
-        return new Cola<>();
+
+    private Cola<Object> obtenerColaElementosPosfijos(Cola<Token> tokensPosfijo, Tabla tabla_resultado) {
+
+        //lista atributos de la tabla
+        ArrayList<Atributo> listaAtributosTabla = tabla_resultado.getListaAtributos();
+        //Cola de elementos de la expresion Atributos y tokens
+        Cola<Object> colaElementosPosfijos = new Cola<>();
+
+        for (int i = 0; i < tokensPosfijo.getSize(); i++) {
+            boolean encontroAtributo = false;
+            Token tokenActual = tokensPosfijo.buscar_por_orden(i);
+            //Guardamos el nombre del token que puede corresponder a una columna
+            String nombreToken = tokenActual.getTokenValor().toUpperCase();
+            //Buscamos la columna en la lista de atributos
+            for (int j = 0; j < listaAtributosTabla.size(); j++) {
+                String nombreAtributoActual = listaAtributosTabla.get(j).getNombre().toUpperCase();
+                if (nombreToken.equals(nombreAtributoActual)) {
+                    //Agregamos el atributo coincidente
+                    colaElementosPosfijos.agregar(listaAtributosTabla.get(j));
+                    encontroAtributo = true; //Se encontro el atributo
+                    break;
+                }
+            }
+            //Entonces si no se encontro atributo debe ser un operador u otro token
+            if (!encontroAtributo) {
+                colaElementosPosfijos.agregar(tokenActual);
+            }
+        }
+
+        //Retorna la cola de atributos y operadores
+        return colaElementosPosfijos;
+    }
+
+    //Metodo para resolver expresiones posfijas
+    private ArrayList<Integer> obtenerIndicesWhere(Cola<Object> colaElementosPosfijos, Tabla tabla_resultado) {
+        ArrayList<Integer> listaIndicesWhere = new ArrayList<>();
+        int numeroSize = tabla_resultado.getListaAtributos().get(0).getListaValores().size();
+        for (int indexAtributo = 0; indexAtributo <  numeroSize; indexAtributo++) {
+            Pila<Object> pilaExpresion = new Pila<>();
+            for (int i = 0; i < colaElementosPosfijos.getSize(); i++) {
+                Object elemento = colaElementosPosfijos.buscar_por_orden(i);
+                if (elemento instanceof Atributo) {
+                    if (elemento instanceof Atributo) {
+                        // Suponiendo que getValor devuelve un Integer
+                        pilaExpresion.push(Integer.valueOf((String) ((Atributo) elemento).getListaValores().get(indexAtributo)));
+                    }
+
+                } else if (elemento instanceof Token) {
+                    if (((Token) elemento).getTipo().equals(Tokenizer.NUMBER)) {
+                        pilaExpresion.push(Integer.valueOf(((Token) elemento).getTokenValor()));
+                    } else {
+                        Token operador = (Token) elemento;
+                        switch (operador.getTokenValor()) {
+                            case Tokenizer.EQUAL:
+                                // Ejemplo para EQUAL
+                                if (operador.getTokenValor().equals(Tokenizer.EQUAL)) {
+                                    Integer valorDer = (Integer) pilaExpresion.pop().getDato();
+                                    Integer valorIzq = (Integer) pilaExpresion.pop().getDato();
+                                    Boolean resultado = valorIzq.equals(valorDer);
+                                    pilaExpresion.push(resultado);
+                                }
+                                break;
+                            case "!=":
+                            case "<>":
+                            case Tokenizer.GREATER_EQUAL:
+                            case Tokenizer.LESS_EQUAL:
+                            case Tokenizer.GREATER:
+                            case Tokenizer.LESS:
+                            case Tokenizer.AND:
+                            case Tokenizer.OR:
+                            case Tokenizer.NOT:
+
+                                // Implementar otros casos...
+                                break;
+                            default:
+                                // Manejo de operadores desconocidos o errores
+                                System.out.println("Operador desconocido: " + operador.getTokenValor());
+                        }
+                    }
+
+                }
+            }
+            // Evaluación final para este índice
+            if (!pilaExpresion.isEmpty() && (Boolean) pilaExpresion.pop().getDato()) {
+                listaIndicesWhere.add(indexAtributo);
+            }
+        }
+        return listaIndicesWhere;
     }
 
     int precedencia(String operador) {
@@ -322,6 +423,8 @@ public class Ejecución {
             case Tokenizer.LESS_EQUAL:
             case Tokenizer.GREATER:
             case Tokenizer.LESS:
+                return 3;
+            case Tokenizer.NOT:
                 return 2;
             case Tokenizer.AND:
                 return 1;
