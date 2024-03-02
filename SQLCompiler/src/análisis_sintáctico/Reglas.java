@@ -218,6 +218,10 @@ public class Reglas {
 
     public boolean where() {
         //Implementacion del analisis sintactico de where
+        Sintáctico.colaTokens.imprimirCola();
+        if(Sintáctico.indexColaTokens >= Sintáctico.colaTokens.getSize()){
+            return false;
+        }
         if (!Sintáctico.tipo_actual().equals(Tokenizer.WHERE)) {
             //El token actual no es WHERE
             //Retornar falso

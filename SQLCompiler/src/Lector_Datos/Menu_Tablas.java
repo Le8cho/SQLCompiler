@@ -208,11 +208,11 @@ public class Menu_Tablas extends javax.swing.JFrame {
             System.out.print(parametros[i] + " ");
         }
         
-        Cola<Token> colaColumna = (Cola<Token>) parametros[0];
-        colaColumna.imprimirCola();
-        
-        Cola<Token> colaTokensLogicos = (Cola<Token>) parametros[2];
-        colaTokensLogicos.imprimirCola();
+//        Cola<Token> colaColumna = (Cola<Token>) parametros[0];
+//        colaColumna.imprimirCola();
+//        
+//        Cola<Token> colaTokensLogicos = (Cola<Token>) parametros[2];
+//        colaTokensLogicos.imprimirCola();
         
         Ejecución ej = new Ejecución(baseTabla);
         DefaultTableModel mo = ej.crear_modelo_tabla(parametros, sint.contar_elementos(parametros));
