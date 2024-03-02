@@ -59,14 +59,39 @@ public class Ejecución {
             return null;
         }
 
+        // Numero de registros sin where
+        int numRegistros = tabla_resultado.getListaAtributos().size();
+        
+        // Aquí el where (fijar número de registros a mostrar)
+        
+        
         //Downcasting
         Cola<Token> colaColumnasSelect = (Cola<Token>) parametroListaColumnas;
+        
+        // Verificar si existen expresiones aritméticas
+        if (buscarAritméticas(parametroListaColumnas)) {
+            String operacion = crearStringOperacion(parametroListaColumnas);
+            InfijasAPosfijas op = new InfijasAPosfijas();
+            int resultado = op.operarExpresion(operacion);
+            colaColumnasSelect = modificarColaColumnas(colaColumnasSelect, resultado);
+            
+            // DEBUG
+            colaColumnasSelect.imprimirCola();
+            
+            // Se crea un nuevo Atributo para tratar la constante como uno y mantener uniformidad del modelo
+            // Atributo atConstante = new Atributo(resultado, numRegistros);
+            
+        }
+        
+        
+       
 
         System.out.println(verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado));
 
         //Si comprobamos que todas las tablas estan OK procedemos a mostrar la tabla Query
         if (verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado)) {
 
+            
             insertarColumnas(colaColumnasSelect, tabla_resultado, modelo);
 
         }
@@ -149,15 +174,23 @@ public class Ejecución {
                         modelo.addColumn(valorColumna, columnaModelo);
 
                     } else {
-                        System.out.println("o no hay atribut columna o no hay lista de valores");
+                        System.out.println("o no hay atributo columna o no hay lista de valores");
                     }
 
                     break;
 
+                    
+                    
+                    
+                    
                 case Tokenizer.NUMBER:
                 case Tokenizer.STRING:
                     insertarConstante(valorColumna, modelo, listaAtributos);
                     break;
+                    
+                    
+                    
+                    
                 case Tokenizer.ASTERISK:
                     //insertamos todas las columnas
                     for (Atributo atributo : listaAtributos) {
@@ -203,6 +236,52 @@ public class Ejecución {
         modelo.addColumn(valorColumna, columnaModelo);
 
     }
+
+
+    private boolean buscarAritméticas(Object parametroListaColumnas) {
+        Cola <Token> colaSelect = (Cola <Token>) parametroListaColumnas;
+        boolean tieneArit = false;
+        
+        for (int i = 0 ; i < colaSelect.getSize() ; i++) {
+            if (colaSelect.buscar_por_orden(i).getTipo().equals("ARIT")) {
+                tieneArit = true;
+            }
+        }    
+        return tieneArit;
+    }
+    
+    private String crearStringOperacion(Object parametroListaColumnas) {
+        Cola <Token> colaSelect = (Cola <Token>) parametroListaColumnas;
+        String operacion = "";
+        
+        for (int i = 0 ; i < colaSelect.getSize() ; i++) {
+            if (colaSelect.buscar_por_orden(i).getTipo().equals("ARIT")) {
+                operacion = operacion + colaSelect.buscar_por_orden(i).getTokenValor();
+            }
+        }    
+        
+        // DEBUG
+        System.out.println("String: " + operacion);
+        
+        return operacion;
+    }
+    
+    public Cola<Token> modificarColaColumnas(Cola<Token> columnasSelect, int resultado) {
+        int indiceFinal = 0;
+        
+        for (int i = 0 ; i < columnasSelect.getSize() ; i++) {
+            if (columnasSelect.buscar_por_orden(i).getTipo().equals("ARIT")) {
+                indiceFinal = i;
+            }
+        }
+        
+        columnasSelect.buscar_por_orden(indiceFinal).setTipo("NUMBER");
+        columnasSelect.buscar_por_orden(indiceFinal).setTokenValor(Integer.toString(resultado));
+ 
+        return columnasSelect;
+    } 
+    
+    
 
     public DefaultTableModel ejec_3_parametros(Object parametroListaColumnas, Object parametroListaLogica, String nombreTabla) {
         DefaultTableModel modelo = new DefaultTableModel();
@@ -538,4 +617,7 @@ public class Ejecución {
         }
     }
 
+
 }
+
+    
