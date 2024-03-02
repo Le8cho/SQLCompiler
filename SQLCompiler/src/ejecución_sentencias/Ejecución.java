@@ -5,10 +5,12 @@
 package ejecución_sentencias;
 
 import EDD.Cola;
+import EDD.Pila;
 import Lector_Datos.Atributo;
 import Lector_Datos.Tabla;
 import analizador_lexico.Token;
 import analizador_lexico.Tokenizer;
+import análisis_sintáctico.Reglas;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 
@@ -29,6 +31,9 @@ public class Ejecución {
         if (num_elementos == 2) {
             //Lista de columnas parametros[0] y parametros[1] nombre tabla 
             modelo = ejec_2_parametros(parametros[0], parametros[1].toString());
+        }
+        if (num_elementos == 3) {
+            modelo = ejec_3_parametros(parametros[0], parametros[2], parametros[1].toString());
         }
         return modelo;
     }
@@ -197,6 +202,136 @@ public class Ejecución {
         //añadimos la columna a la Jtable
         modelo.addColumn(valorColumna, columnaModelo);
 
+    }
+
+    public DefaultTableModel ejec_3_parametros(Object parametroListaColumnas, Object parametroListaLogica, String nombreTabla) {
+        DefaultTableModel modelo = new DefaultTableModel();
+
+        Tabla tabla_resultado = null;
+
+        for (Tabla tabla : base) {
+            if (nombreTabla.equals(tabla.getNombreTabla())) {
+                tabla_resultado = tabla;
+            }
+        }
+
+        //No se encontró la tabla
+        if (tabla_resultado == null) {
+            System.out.println("Tabla no encontrada " + nombreTabla);
+            return null;
+        }
+
+        if (parametroListaColumnas == null) {
+            System.out.println("No se identifico al lista de columnas para procesar");
+            return null;
+        }
+
+        //Downcasting
+        //traemos el token de 'columnas' identificadas
+        Cola<Token> colaColumnasSelect = (Cola<Token>) parametroListaColumnas;
+        System.out.println("Columnas del select validadas: ");
+        System.out.println(verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado));
+
+        //traemos el token de columnas logicas
+        Cola<Token> tokensLogicos = (Cola<Token>) parametroListaLogica;
+        System.out.println("Columnas del where validadas: ");
+        System.out.println(verificarColumnasEnTabla(tokensLogicos, tabla_resultado));
+
+        //ahora si, el trabajo duro
+        Cola<Object> atributosLogicos = convertirPosfija(tokensLogicos);
+
+        return null;
+    }
+
+    //Con este metodo planeamos primero obtener la cola TokensLogicos en forma posfija
+    //Luego reconocer los atributos que estan en esa cola posfija 
+    private Cola<Object> convertirPosfija(Cola<Token> tokensLogicos) {
+
+        //obtenemos el orden posfijo de los Tokens
+        Cola<Token> tokensPosfijo = obtenerColaTokenPosfija(tokensLogicos);
+        
+        //ahora obtenemos la cola posfija de los elementos
+        Cola<Object> elementosPosfijos = new Cola<>();
+        
+        tokensPosfijo.imprimirCola();
+
+        return new Cola<>();
+    }
+
+    private Cola<Token> obtenerColaTokenPosfija(Cola<Token> tokensLogicos) {
+
+        //Mi pila de operadores
+        Pila<Token> pilaOperadores = new Pila<>();
+        //Nueva cola posfija
+        Cola<Token> tokensPosfijo = new Cola<>();
+
+        int sizeCola = tokensLogicos.getSize();
+        int index = 0;
+
+        while (index < sizeCola) {
+            Token tokenActual = tokensLogicos.buscar_por_orden(index);
+            String tipoTokenActual = tokenActual.getTipo();
+            switch (tipoTokenActual) {
+                case Tokenizer.ID:
+                case Tokenizer.NUMBER:
+                case Tokenizer.STRING:
+                    tokensPosfijo.agregar(tokenActual);
+                    break;
+                //Si es un operador revisar las precedencias antes de hacer un movimiento
+                case Tokenizer.EQUAL:
+                case "!=":
+                case "<>":
+                case Tokenizer.GREATER_EQUAL:
+                case Tokenizer.LESS_EQUAL:
+                case Tokenizer.GREATER:
+                case Tokenizer.LESS:
+                case Tokenizer.AND:
+                case Tokenizer.OR:
+                    while (!pilaOperadores.isEmpty() && precedencia(tipoTokenActual) <= precedencia(pilaOperadores.getTope().getDato().getTipo())) {
+                        tokensPosfijo.agregar((Token) pilaOperadores.pop().getDato());
+                    }
+                    pilaOperadores.push(tokenActual);
+                    break;
+
+                default:
+                    System.out.println("Algo salio mal: operador no reconocido " + tokenActual.getTokenValor());
+            }
+            index++;
+        }
+
+        //Agregamos los operadores que quedaron en la pila a la Cola Posfija
+        while (!pilaOperadores.isEmpty()) {
+            Token tokenOperadorCima = (Token) pilaOperadores.pop().getDato();
+            tokensPosfijo.agregar(tokenOperadorCima);
+        }
+
+        return tokensPosfijo;
+    }
+    
+    private Cola<Object> obtenerColaElementosPosfijos(Cola<Token> tokensPosfijo){
+        
+        return new Cola<>();
+    }
+
+    int precedencia(String operador) {
+        switch (operador) {
+            case Tokenizer.EQUAL:
+            case "!=":
+            case "<>":
+            case Tokenizer.GREATER_EQUAL:
+            case Tokenizer.LESS_EQUAL:
+            case Tokenizer.GREATER:
+            case Tokenizer.LESS:
+                return 2;
+            case Tokenizer.AND:
+                return 1;
+            case Tokenizer.OR:
+                return 0;
+            default:
+                //Operador desconocido
+                return -1;
+
+        }
     }
 
 }
