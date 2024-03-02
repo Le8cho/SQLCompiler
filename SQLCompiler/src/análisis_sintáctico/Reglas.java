@@ -60,7 +60,7 @@ public class Reglas {
             //traemos el tipo del token actual
             tipoToken = Sintáctico.tipo_actual();
             
-            if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING)) {
+            if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING) || tipoToken.equals(Tokenizer.OPEN_P)) {
                 //Si es un token y no se esta esperando una columna
                 if (!esperaColumna) {
                     System.out.println("Error gramatical, se esperaba :" + Tokenizer.COMMA);
@@ -81,9 +81,12 @@ public class Reglas {
                         
                         to.setTipo("ARIT");
                         colaColumnas.agregar(to);
-                    }
-                    
+                    }        
                     Sintáctico.indexColaTokens = esOperacion;
+                    
+                    // DEBUG
+                    System.out.println("Indice después de OA: " + Sintáctico.indexColaTokens);
+                    
                     esperaColumna = false;
                     continue;
                 }             
@@ -179,8 +182,9 @@ public class Reglas {
                 }
                 indiceCopia++;
                 esperaOperando = false;
+                esperaCierre--;
                
-            } else if (tipoActual.equals(Tokenizer.COMMA) && tieneOperador == true) {
+            } else if ((tipoActual.equals(Tokenizer.COMMA) || tipoActual.equals(Tokenizer.FROM)) && tieneOperador == true) {
                 if (esperaCierre != 0) {
                     System.out.println("Error de sintaxis: Hay un paréntesis no cerrado");
                     return 0;
@@ -188,7 +192,7 @@ public class Reglas {
                 return indiceCopia;
             }
             else {
-                System.out.println("Error de sintaxis: Se introdujo una expresión inválida");
+                System.out.println("No es expresión");
                 return 0;
             }
         }

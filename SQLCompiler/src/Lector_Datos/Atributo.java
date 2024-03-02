@@ -17,7 +17,7 @@ public class Atributo  {
     private char tipo;
     private int longitud;
     private int decimales;
-    private final ArrayList<Object> listaValores = new ArrayList<>();
+    private ArrayList<Object> listaValores = new ArrayList<>();
 
     public void agregarValor(Object val) {
         this.listaValores.add(val);
@@ -28,8 +28,27 @@ public class Atributo  {
     }
     
     public Atributo(){
-        
     }
+    
+    // Para crear atributos CONSTANTES (numerales)
+    public Atributo(int constante, int numRegistros){
+        this.codigo = 0;
+        this.nombre = Integer.toString(constante);
+        this.tipo = 'N';
+        this.longitud = this.nombre.length();
+        this.decimales = 0;
+        this.listaValores = crearListaConstante(Integer.toString(constante), numRegistros);
+    }
+    
+    // Para crear atributos CONSTANTES (numerales)
+    public Atributo(String constante, int numRegistros){
+        this.codigo = 0;
+        this.nombre = constante;
+        this.tipo = 'V';
+        this.longitud = this.nombre.length();
+        this.decimales = 0;
+        this.listaValores = crearListaConstante(constante, numRegistros);
+    }   
     
     public Atributo(int codigo, String nombre, char tipo, int longitud, int decimales) {
         this.codigo = codigo;
@@ -39,6 +58,16 @@ public class Atributo  {
         this.decimales = decimales;
     }
 
+    private ArrayList<Object> crearListaConstante (String constante, int numRegistros) {
+        ArrayList<Object> listaResultado = new ArrayList<>();
+        
+        for (int i = 0 ; i < numRegistros ; i++) {           
+            listaResultado.add(constante);
+        }    
+        return listaResultado;
+    } 
+    
+   
     public int getCodigo() {
         return codigo;
     }

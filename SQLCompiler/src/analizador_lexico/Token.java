@@ -20,9 +20,6 @@ public class Token {
         return "('" + tipo + "', " + tokenValor + ", '" + index + "')";
     }
     
-    
-    
-    
     public String getTipo() {
         return tipo;
     }
