@@ -253,11 +253,112 @@ public class Ejecución {
         //indices que cumplen con la condicion
         System.out.println(indicesCumplenWhere.toString());
 
-        
-        
-        
-        
-        return null;
+        //Si comprobamos que todas las tablas estan OK procedemos a mostrar la tabla Query
+        if (verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado) && verificarColumnasEnTabla(tokensLogicos, tabla_resultado) ) {
+
+            insertarColumnasWhere(colaColumnasSelect, tabla_resultado, modelo, indicesCumplenWhere);
+
+        }
+
+        return modelo;
+
+    }
+
+    private void insertarColumnasWhere(Cola<Token> colaColumnasSelect, Tabla tabla_resultado, DefaultTableModel modelo, ArrayList<Integer> indicesCumplenWhere) {
+
+        //Obtenemos la lista de atributos de la Tabla requerida
+        ArrayList<Atributo> listaAtributos = tabla_resultado.getListaAtributos();
+
+        //Iteramos sobre cada columna obtenida de la sentencia SELECT
+        for (int i = 0; i < colaColumnasSelect.getSize(); i++) {
+            //Obtenemos la columna y lo que nos convenga
+            Token columna = colaColumnasSelect.buscar_por_orden(i);
+            String valorColumna = columna.getTokenValor().toUpperCase();
+            String tipoColumna = columna.getTipo().toUpperCase();
+
+            switch (tipoColumna) {
+                case Tokenizer.ID:
+                    Atributo atributoColumna = null;
+                    //Buscaremos el atributo que representa la columna
+                    for (Atributo atributo : listaAtributos) {
+                        String nombreAtributo = atributo.getNombre().toUpperCase();
+                        if (valorColumna.equals(nombreAtributo)) {
+                            atributoColumna = atributo;
+                            //salimos del for puesto que ya encontramos el atributo relacionado
+                            break;
+                        }
+                    }
+                    //insertamos la columna en la tabla con la lista de valores del atributo
+                    if (atributoColumna != null) {
+                        int sizeAtributoColumna = indicesCumplenWhere.size();
+                        //Creo un objeto que represente una columna
+                        Object[] columnaModelo = new Object[sizeAtributoColumna];
+
+                        //paso los valores de la lista de valores en la columna que cumplen el where
+                        int index = 0;
+                        for (Integer fila : indicesCumplenWhere) {
+                            columnaModelo[index] = atributoColumna.getListaValores().get(fila);
+                            index++;
+                        }
+                        //añadimos la columna a la Jtable
+                        modelo.addColumn(valorColumna, columnaModelo);
+
+                    } else {
+                        System.out.println("o no hay atributo columna o no hay lista de valores");
+                    }
+
+                    break;
+
+                case Tokenizer.NUMBER:
+                case Tokenizer.STRING:
+                    insertarConstanteWhere(valorColumna, modelo, listaAtributos, indicesCumplenWhere);
+                    break;
+                case Tokenizer.ASTERISK:
+                    //insertamos todas las columnas
+                    for (Atributo atributo : listaAtributos) {
+                        //obtenemos la cantidad de filas
+                        int sizeAtributoColumna = indicesCumplenWhere.size();
+                        Object[] columnaModelo = new Object[sizeAtributoColumna];
+
+                        //paso los valores de la lista de valores en la columna
+                        int index = 0;
+                        for (Integer fila : indicesCumplenWhere) {
+                            columnaModelo[index] = atributo.getListaValores().get(fila);
+                            index++;
+                        }
+                        //añadimos la columna a la Jtable
+                        modelo.addColumn(atributo.getNombre(), columnaModelo);
+                    }
+                    break;
+
+            }
+
+        }
+
+    }
+
+    private void insertarConstanteWhere(String valorColumna, DefaultTableModel modelo, ArrayList<Atributo> listaAtributos, ArrayList<Integer> indicesCumplenWhere) {
+
+        //Obtenemos la cantidad de filas o registros de un atributo cualquiera
+        int cantRegistrosTabla = indicesCumplenWhere.size();
+
+        //Creamos un atributo temporal falso
+        Atributo atributoColumna = new Atributo();
+        //Rellenamos la lista de valores con el valor constante
+        for (int i = 0; i < cantRegistrosTabla; i++) {
+            atributoColumna.agregarValor(valorColumna);
+        }
+
+        //Creo un objeto que represente una columna
+        Object[] columnaModelo = new Object[cantRegistrosTabla];
+
+        //paso los valores de la lista de valores en la columna
+        for (int i = 0; i < cantRegistrosTabla; i++) {
+            columnaModelo[i] = atributoColumna.getListaValores().get(i);
+        }
+        //añadimos la columna a la Jtable
+        modelo.addColumn(valorColumna, columnaModelo);
+
     }
 
     //Con este metodo planeamos primero obtener la cola TokensLogicos en forma posfija
@@ -361,7 +462,7 @@ public class Ejecución {
     private ArrayList<Integer> obtenerIndicesWhere(Cola<Object> colaElementosPosfijos, Tabla tabla_resultado) {
         ArrayList<Integer> listaIndicesWhere = new ArrayList<>();
         int numeroSize = tabla_resultado.getListaAtributos().get(0).getListaValores().size();
-        for (int indexAtributo = 0; indexAtributo <  numeroSize; indexAtributo++) {
+        for (int indexAtributo = 0; indexAtributo < numeroSize; indexAtributo++) {
             Pila<Object> pilaExpresion = new Pila<>();
             for (int i = 0; i < colaElementosPosfijos.getSize(); i++) {
                 Object elemento = colaElementosPosfijos.buscar_por_orden(i);
