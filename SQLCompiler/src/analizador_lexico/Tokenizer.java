@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
+
     //Diccionario de Palabras
     //KEYWORDS
     public static final String SELECT = "SELECT";
@@ -298,6 +299,9 @@ public class Tokenizer {
                                 } else if (input.charAt(nextIndex) == '=') {
                                     token = new Token(LESS_EQUAL, "<=", index);
                                     index = nextIndex;
+                                } //no es ninguno de los tres casos
+                                else {
+                                    token = new Token(LESS, "<", index);
                                 }
                             }
                             case '>' -> {
@@ -307,6 +311,9 @@ public class Tokenizer {
                                 } else if (input.charAt(nextIndex) == '=') {
                                     token = new Token(GREATER_EQUAL, ">=", index);
                                     index = nextIndex;
+                                } //No es ninguno de los tres casos
+                                else {
+                                    token = new Token(GREATER, ">", index);
                                 }
                             }
                             case '!' -> {
