@@ -25,6 +25,7 @@ public class Reglas {
         //Si el siguiente token es diferente de FROM retornar null
         System.out.println(Sintáctico.tipo_actual());
         System.out.println(Sintáctico.token_actual());
+        
         if (!Sintáctico.tipo_actual().equals("FROM")) {
             return null;
         }
@@ -51,6 +52,9 @@ public class Reglas {
         Cola<Token> colaColumnas = new Cola<>();
         boolean esperaColumna = true; //despues del select esperamos una columna
         String tipoToken; 
+        
+        int esOperacion;
+        
         while (true) {
             //col1, col2... coln FROM
             //traemos el tipo del token actual
@@ -62,6 +66,28 @@ public class Reglas {
                     System.out.println("Error gramatical, se esperaba :" + Tokenizer.COMMA);
                     return false;
                 }
+               
+                esOperacion = operacion_aritmetica();              
+                if (esOperacion != 0) {
+                    
+                    // DEBUG
+                    System.out.println(esOperacion);
+                    
+                    for (int i = Sintáctico.indexColaTokens ; i < esOperacion ; i ++) {
+                        Token to = (Token) Sintáctico.colaTokens.buscar_por_orden(i);
+                        
+                        // DEBUG
+                        System.out.println(to.getTokenValor());
+                        
+                        to.setTipo("ARIT");
+                        colaColumnas.agregar(to);
+                    }
+                    
+                    Sintáctico.indexColaTokens = esOperacion;
+                    esperaColumna = false;
+                    continue;
+                }             
+                
                 //Si se se esperaba una columna agregar el token ya sea ID, * , number o string
                 colaColumnas.agregar(Sintáctico.token_actual());
                 //Avanzamos al siguiente token
@@ -86,7 +112,10 @@ public class Reglas {
                     System.out.println("Error de sintaxis: Se esperaba" + Tokenizer.ID);
                     return false;
                 }
-                //Hemos llegado al final del reconocimiento lista columnas
+                // DEBUG
+                colaColumnas.imprimirCola();
+                
+               //Hemos llegado al final del reconocimiento lista columnas
                 parametros[0] = colaColumnas;
                 
                 //Analisis gramatical de lista columnas completado (faltaria reconocer expresiones aritmeticas)
@@ -94,9 +123,10 @@ public class Reglas {
                 return true;
             }
             else{
-                System.out.println("Error de sintaxis: Se esperaba + " + Tokenizer.FROM);
+                System.out.println("Error de sintaxis: Se esperaba " + Tokenizer.FROM);
                 return false;
-            }
+            }           
+            
         }
 
 //        if (!Sintáctico.tipo_actual().equals("ID")) {
@@ -107,6 +137,65 @@ public class Reglas {
 //        parametros[0] = Sintáctico.valor_actual();//agregar el identificador como segundo parametro    
     }
 
+    public int operacion_aritmetica() {
+        int indiceCopia = Sintáctico.indexColaTokens;
+        String tipoActual;
+        
+        boolean tieneOperador = false;
+        boolean esperaOperando = true;
+        int esperaCierre = 0;
+        
+        while (true) {
+            
+            Token to = (Token) Sintáctico.colaTokens.buscar_por_orden(indiceCopia);
+            tipoActual = to.getTipo();
+            
+            if (tipoActual.equals(Tokenizer.ID) || tipoActual.equals(Tokenizer.STRING) || tipoActual.equals(Tokenizer.NUMBER)) {
+                if (!esperaOperando) {
+                    System.out.println("Error de sintaxis: Se esperaba OPERADOR");
+                    return 0;
+                }
+                indiceCopia++;
+                esperaOperando = false;
+                
+            } else if (tipoActual.equals(Tokenizer.PLUS) || tipoActual.equals(Tokenizer.MINUS) || tipoActual.equals(Tokenizer.ASTERISK) || tipoActual.equals(Tokenizer.DIV)) {
+                if (esperaOperando) {
+                    System.out.println("Error de sintaxis: Se esperaba OPERANDO");
+                    return 0;
+                }
+                indiceCopia++;
+                esperaOperando = true;
+                tieneOperador = true;
+                
+            } else if (tipoActual.equals(Tokenizer.OPEN_P)) {
+                indiceCopia++;
+                esperaOperando = true;
+                esperaCierre++;
+                
+            } else if (tipoActual.equals(Tokenizer.CLOSE_P)) {
+                if (esperaCierre == 0) {
+                    System.out.println("Error de sintaxis: Se cerró paréntesis innecesariamente");
+                    return 0;
+                }
+                indiceCopia++;
+                esperaOperando = false;
+               
+            } else if (tipoActual.equals(Tokenizer.COMMA) && tieneOperador == true) {
+                if (esperaCierre != 0) {
+                    System.out.println("Error de sintaxis: Hay un paréntesis no cerrado");
+                    return 0;
+                }
+                return indiceCopia;
+            }
+            else {
+                System.out.println("Error de sintaxis: Se introdujo una expresión inválida");
+                return 0;
+            }
+        }
+ 
+    }
+    
+    
     public boolean nombre_tabla() {
         if (!Sintáctico.tipo_actual().equals("ID")) {
             return false;
