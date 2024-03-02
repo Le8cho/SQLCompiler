@@ -27,6 +27,10 @@ public class Atributo  {
         return listaValores;
     }
     
+    public Atributo(){
+        
+    }
+    
     public Atributo(int codigo, String nombre, char tipo, int longitud, int decimales) {
         this.codigo = codigo;
         this.nombre = nombre;
