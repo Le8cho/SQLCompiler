@@ -10,8 +10,10 @@ import Lector_Datos.Atributo;
 import Lector_Datos.Tabla;
 import analizador_lexico.Token;
 import analizador_lexico.Tokenizer;
-import análisis_sintáctico.Reglas;
+import análisis_sintáctico.Inst_Select;
+import análisis_sintáctico.Lista_Instrucciones;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -21,12 +23,187 @@ import javax.swing.table.DefaultTableModel;
 public class Ejecución {
 
     ArrayList<Tabla> base = new ArrayList<>();
+    Tabla tablaFinal;
 
     public Ejecución(ArrayList baseTablas) {
         this.base = baseTablas;
+        this.tablaFinal = new Tabla();
     }
 
-    public DefaultTableModel crear_modelo_tabla(Object[] parametros, int num_elementos) {
+    public DefaultTableModel crear_tabla_resultado(Lista_Instrucciones instrucciones) {
+        DefaultTableModel modelo = new DefaultTableModel();
+        
+        Tabla tablaRes = buscarTabla(instrucciones.getTabla());
+
+        //No se encontró la tabla
+        if (tablaRes == null) {
+            JOptionPane.showMessageDialog(null, "No se encontró la tabla buscada", "ERROR", JOptionPane.ERROR_MESSAGE);
+            //return null;
+        }    
+
+        aplicarSelect(instrucciones.getListaSelect(), tablaRes);
+        
+        modelo = crearModelo(tablaFinal, modelo);
+        
+        return modelo;
+    }
+    
+    public void aplicarSelect(ArrayList<Inst_Select> listaSelect, Tabla tablaRes) {
+        for (Inst_Select inst : listaSelect) {
+            
+            if (inst.getTipo().equals("ID")) {
+                Atributo at = buscarAtributo(inst.getParamToken(), tablaRes);
+
+                if (at == null) {
+                    JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    //return null;
+                }
+                
+                tablaFinal.agregarAtributo(at);
+            }    
+
+            if (inst.getTipo().equals("*")) {
+                for (Atributo atributo : tablaRes.getListaAtributos()) {
+                    tablaFinal.agregarAtributo(atributo);
+                }
+            }    
+
+            if (inst.getTipo().equals("STRING")) {
+                Atributo atributoConst = new Atributo(inst.getParamToken(), tablaRes.getListaAtributos().get(0).getListaValores().size());
+                tablaFinal.agregarAtributo(atributoConst);
+            }     
+
+            if (inst.getTipo().equals("NUMBER")) {
+                Atributo atributoConst = new Atributo(Integer.parseInt(inst.getParamToken()), tablaRes.getListaAtributos().get(0).getListaValores().size());
+                tablaFinal.agregarAtributo(atributoConst);
+            }
+
+            if (inst.getTipo().equals("OPERACION")) {
+                // TODO: Resolver Operación
+                System.out.println("ES OPERACIÓN");
+            }
+
+            if (inst.getTipo().equals("FUNCION")) {
+                // TODO: Funciones 
+                System.out.println("ES FUNCIÓN");
+            }
+        }    
+    }
+    
+    
+    public void aplicarWhere(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes) {
+        
+        Atributo atributoRes = buscarAtributo(listaWhere.get(0).buscar_por_orden(0).getTokenValor(), tablaRes);
+        
+        if (atributoRes == null) {
+            JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR", JOptionPane.ERROR_MESSAGE);
+            //return null;
+        } 
+        
+        filtrarFilas(listaWhere, tablaRes, atributoRes);
+        
+        
+        
+    }
+    
+    
+    
+    public Tabla buscarTabla(String tablaBuscada) {
+        Tabla tabla_resultado = null;
+        
+        for (Tabla tabla : base) {
+            if (tabla.getNombreTabla().equals(tablaBuscada)) {
+                tabla_resultado = tabla;
+            }
+        }        
+        return tabla_resultado;       
+    }
+    
+    public Atributo buscarAtributo(String atributoBuscado, Tabla tablaRes) {
+        Atributo atributo_resultado = null;
+        
+        for (Atributo atributo : tablaRes.getListaAtributos()) {
+            if (atributo.getNombre().equals(atributoBuscado)) {
+                atributo_resultado = atributo;
+            }     
+        }
+        return atributo_resultado;
+    }
+    
+    public void filtrarFilas(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes, Atributo atributoRes) {
+        String operador = listaWhere.get(0).buscar_por_orden(1).getTokenValor();
+        Token tokenCondicion = listaWhere.get(0).buscar_por_orden(2);
+        
+        // Número de registro que agregaremos a la tabla
+        int indice;
+        
+        if (operador.equals("<")) {
+            if (tokenCondicion.getTipo().equals("NUMBER")) {
+                for (int i = 0 ; i < atributoRes.getListaValores().size() ; i++) {
+                    if ((int) atributoRes.getListaValores().get(i) < Integer.parseInt(tokenCondicion.getTokenValor())) {
+                        indice = atributoRes.getListaValores().indexOf(i);
+                        
+                        
+                    }
+                    
+                    
+                    
+                }
+
+                
+                
+                
+            }
+            else {
+                JOptionPane.showMessageDialog(null, "Se esperaba un number para esta operación WHERE", "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        }
+        
+    }
+    
+    public void agregarFila(Tabla tablaRes, int indice) {
+        
+        
+        
+        
+        
+    }
+    
+    public DefaultTableModel crearModelo(Tabla tabla, DefaultTableModel modelo) {
+        
+        String[] nombreColumnas = new String[tabla.getListaAtributos().size()];
+        
+        for (int i = 0 ; i < tabla.getListaAtributos().size() ; i++) {
+            nombreColumnas[i] = tabla.getListaAtributos().get(i).getNombre();
+        }
+        
+        modelo.setColumnIdentifiers(nombreColumnas);      
+     
+        try{
+
+            Object[] fila = new Object[modelo.getColumnCount()];
+            
+            for (int i = 0 ; i < tabla.getListaAtributos().get(0).getListaValores().size() ; i++) { 
+                
+                for (int j = 0 ; j < modelo.getColumnCount() ; j++) {
+                    
+                    fila[j] = tabla.getListaAtributos().get(j).getListaValores().get(i);                    
+                }
+                modelo.addRow(fila);
+                
+            }
+            return modelo;
+        }
+        catch (Exception ex) {
+            System.err.println("Ha ocurrido un error al leer la tabla");
+        }
+        
+        return null;
+    }
+    
+    
+    /*public DefaultTableModel crear_modelo_tabla(Object[] parametros, int num_elementos) {
         DefaultTableModel modelo = null;
         if (num_elementos == 2) {
             //Lista de columnas parametros[0] y parametros[1] nombre tabla 
@@ -37,6 +214,9 @@ public class Ejecución {
         }
         return modelo;
     }
+    */
+
+
 
     public DefaultTableModel ejec_2_parametros(Object parametroListaColumnas, String nombreTabla) {
         DefaultTableModel modelo = new DefaultTableModel();

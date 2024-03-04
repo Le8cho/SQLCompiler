@@ -31,23 +31,23 @@ public class Atributo  {
     }
     
     // Para crear atributos CONSTANTES (numerales)
-    public Atributo(int constante, int numRegistros){
+    public Atributo(int constanteInt, int numRegistros){
         this.codigo = 0;
-        this.nombre = Integer.toString(constante);
+        this.nombre = Integer.toString(constanteInt);
         this.tipo = 'N';
         this.longitud = this.nombre.length();
         this.decimales = 0;
-        this.listaValores = crearListaConstante(Integer.toString(constante), numRegistros);
+        this.listaValores = crearListaConstante(Integer.toString(constanteInt), numRegistros);
     }
     
     // Para crear atributos CONSTANTES (numerales)
-    public Atributo(String constante, int numRegistros){
+    public Atributo(String constanteStr, int numRegistros){
         this.codigo = 0;
-        this.nombre = constante;
+        this.nombre = constanteStr;
         this.tipo = 'V';
         this.longitud = this.nombre.length();
         this.decimales = 0;
-        this.listaValores = crearListaConstante(constante, numRegistros);
+        this.listaValores = crearListaConstante(constanteStr, numRegistros);
     }   
     
     public Atributo(int codigo, String nombre, char tipo, int longitud, int decimales) {

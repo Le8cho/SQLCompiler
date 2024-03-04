@@ -40,15 +40,7 @@ public class Reglas {
             return instruccionesFinal;
         }
         
-        // DEBUG
-        System.out.println("Parámetros: ");
-        for (Inst_Select in : instruccionesFinal.getListaSelect()) {
-            System.out.println(in.getParamCola());
-            System.out.println(in.getParamToken());
-            System.out.println(in.getTipo());
-        }
-        System.out.println(instruccionesFinal.getListaWhere());
-        
+        //TODO: IMPLEMENTAR ORDER BY
         
         return instruccionesFinal;
     }
@@ -74,20 +66,7 @@ public class Reglas {
         while (true) {
             //col1, col2... coln FROM
             //traemos el tipo del token actual
-            
-            // DEBUG
-            System.out.println("INDICE GENERAL: " + Sintáctico.indexColaTokens);
-            // DEBUG
-            System.out.println("Parámetros: ");
-            for (Inst_Select in : instruccionesFinal.getListaSelect()) {
-                System.out.println("Instruccion select: ");
-                System.out.println(in.getParamToken());
-                System.out.println(in.getTipo());
-            }
-            //System.out.println(instruccionesFinal.getListaWhere());
-            System.out.println("");
-            
-            
+     
             tipoToken = Sintáctico.tipo_actual();
             
             if (operacion_aritmetica()) {

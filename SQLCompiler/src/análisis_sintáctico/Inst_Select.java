@@ -14,13 +14,13 @@ import analizador_lexico.Token;
 public class Inst_Select {
 
     private String tipo;
-    private Cola <Token> paramCola;
-    private String paramToken;
+    private Cola <Token> paramCola = null;
+    private String paramToken = null;
     
     public Inst_Select(Cola<Token> cola) {      
         this.tipo = determinarTipo(cola);
         
-        if (tipo.equals("ID") || tipo.equals("ASTERISK") || tipo.equals("STRING") || tipo.equals("NUMBER")){
+        if (tipo.equals("ID") || tipo.equals("*") || tipo.equals("STRING") || tipo.equals("NUMBER")){
             this.paramToken = cola.buscar_por_orden(0).getTokenValor();
         }
         else {
@@ -63,7 +63,10 @@ public class Inst_Select {
             }
             if (cola.buscar_por_orden(0).getTipo().equals("*")) {
                 return "*";
-            }    
+            }  
+            if (cola.buscar_por_orden(0).getTipo().equals("NUMBER")) {
+                return "NUMBER";
+            } 
         }
         
         else {
