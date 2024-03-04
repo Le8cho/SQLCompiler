@@ -39,7 +39,17 @@ public class Reglas {
             //si no halla where que retorne los parametros que se han reunido hasta ahora
             return instruccionesFinal;
         }
-
+        
+        // DEBUG
+        System.out.println("Parámetros: ");
+        for (Inst_Select in : instruccionesFinal.getListaSelect()) {
+            System.out.println(in.getParamCola());
+            System.out.println(in.getParamToken());
+            System.out.println(in.getTipo());
+        }
+        System.out.println(instruccionesFinal.getListaWhere());
+        
+        
         return instruccionesFinal;
     }
 
@@ -64,9 +74,27 @@ public class Reglas {
         while (true) {
             //col1, col2... coln FROM
             //traemos el tipo del token actual
+            
+            // DEBUG
+            System.out.println("INDICE GENERAL: " + Sintáctico.indexColaTokens);
+            // DEBUG
+            System.out.println("Parámetros: ");
+            for (Inst_Select in : instruccionesFinal.getListaSelect()) {
+                System.out.println("Instruccion select: ");
+                System.out.println(in.getParamToken());
+                System.out.println(in.getTipo());
+            }
+            //System.out.println(instruccionesFinal.getListaWhere());
+            System.out.println("");
+            
+            
             tipoToken = Sintáctico.tipo_actual();
             
-            if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING) || tipoToken.equals(Tokenizer.OPEN_P)) {
+            if (operacion_aritmetica()) {
+                Sintáctico.indexColaTokens++;
+                esperaColumna = false;
+    
+            } else if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING) || tipoToken.equals(Tokenizer.OPEN_P)) {
 
                 //Si es un token y no se esta esperando una columna
                 if (!esperaColumna) {
@@ -84,9 +112,9 @@ public class Reglas {
                 //Actualizamos el esperaColumna
                 esperaColumna = false;
                 
-            } else if (operacion_aritmetica()) {
-                // Al llamar a la función, avanza a expresión + 1 (se espera , o FROM)
-                esperaColumna = false;
+//            } else if (operacion_aritmetica()) {
+//                // Al llamar a la función, avanza a expresión + 1 (se espera , o FROM)
+//                esperaColumna = false;
                 
             } else if (tipoToken.equals(Tokenizer.COMMA)) {
                 //Si el tipotoken es comma pero se esperaba una columna
@@ -139,8 +167,9 @@ public class Reglas {
                 }
                 indiceCopia++;
                 esperaOperando = false;
-                
-            } else if (tipoActual.equals(Tokenizer.PLUS) || tipoActual.equals(Tokenizer.MINUS) || tipoActual.equals(Tokenizer.ASTERISK) || tipoActual.equals(Tokenizer.DIV)) {
+              
+            // El siguiente if else verifica que el operador no se encuentre en primer lugar    
+            } else if (indiceCopia != Sintáctico.indexColaTokens && (tipoActual.equals(Tokenizer.PLUS) || tipoActual.equals(Tokenizer.MINUS) || tipoActual.equals(Tokenizer.ASTERISK)  || tipoActual.equals(Tokenizer.DIV))) {
                 if (esperaOperando) {
                     JOptionPane.showMessageDialog(null, "Error de sintaxis: Se esperaba OPERANDO", "ERROR", JOptionPane.ERROR_MESSAGE);
                     return false;
@@ -173,12 +202,15 @@ public class Reglas {
                     expresion.agregar((Token) Sintáctico.colaTokens.buscar_por_orden(i));
                 }
                 
+                // DEBUG
+                System.out.println(indiceCopia);
+                expresion.imprimirCola();
+                
                 instruccionesFinal.insertarSelect(expresion);
-                Sintáctico.indexColaTokens = indiceCopia;
+                Sintáctico.indexColaTokens = indiceCopia-1;
                 return true;
             }
             else {
-                System.out.println("No es expresión");
                 return false;
             }
         }
@@ -278,7 +310,7 @@ public class Reglas {
                     inicioTermino = false;
                     indexColaLogico++;
                 } else {
-                    System.out.println("Opeerando no esperado: " + token.getTokenValor());
+                    System.out.println("Operando no esperado: " + token.getTokenValor());
                     return false;
                 }
             } //Si es un operador comparacion

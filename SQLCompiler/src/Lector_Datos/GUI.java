@@ -107,7 +107,7 @@ public class GUI extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // PARA SELECCIONAR EL ARCHIVO CON LOS DATOS
-        this.setVisible(true);
+        this.setVisible(false);
         
         // ESTADO 1 SIGNIFICA QUE EL USUARIO YA HA ABIERTO UN CATALOG
         Selector_Archivos selector = new Selector_Archivos();
@@ -122,7 +122,7 @@ public class GUI extends javax.swing.JFrame {
             selector.setLocationRelativeTo(null);
         
             this.dispose();
-        }  
+        }         
     }//GEN-LAST:event_jButton3ActionPerformed
     
     /**

@@ -201,7 +201,8 @@ public class Menu_Tablas extends javax.swing.JFrame {
         
         // TODO: CAMBIAR UTILIZACIÓN DE PARÁMETROS POR LISTA_INSTRUCCIONES
         //parametros = sint.parser();
-      
+        sint.parser();
+        
         // DEBUG
         System.out.println(sint.contar_elementos(parametros));
         

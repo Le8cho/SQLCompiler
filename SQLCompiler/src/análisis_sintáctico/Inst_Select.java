@@ -61,8 +61,8 @@ public class Inst_Select {
             if (cola.buscar_por_orden(0).getTipo().equals("STRING")) {
                 return  "STRING";
             }
-            if (cola.buscar_por_orden(0).getTipo().equals("ASTERISK")) {
-                return "ASTERISK";
+            if (cola.buscar_por_orden(0).getTipo().equals("*")) {
+                return "*";
             }    
         }
         
@@ -73,7 +73,7 @@ public class Inst_Select {
                 
                 tipoActual = cola.buscar_por_orden(i).getTipo();
                 
-                if (tipoActual.equals("PLUS") || tipoActual.equals("MINUS") || tipoActual.equals("ASTERISK") || tipoActual.equals("DIV")) {
+                if (tipoActual.equals("+") || tipoActual.equals("-") || tipoActual.equals("*") || tipoActual.equals("/")) {
                     return "OPERACION";                   
                 }   
             }   
