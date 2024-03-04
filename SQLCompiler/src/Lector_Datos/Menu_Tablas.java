@@ -192,13 +192,15 @@ public class Menu_Tablas extends javax.swing.JFrame {
         tokenList.imprimirCola();
 
         Sintáctico sint = new Sintáctico(tokenList);
+        
         Object[] parametros = new Object[6];
         
          
         // DEBUG
 //        System.out.println(sint.parser().length);
         
-        parametros = sint.parser();
+        // TODO: CAMBIAR UTILIZACIÓN DE PARÁMETROS POR LISTA_INSTRUCCIONES
+        //parametros = sint.parser();
       
         // DEBUG
         System.out.println(sint.contar_elementos(parametros));
