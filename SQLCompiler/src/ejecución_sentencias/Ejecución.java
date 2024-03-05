@@ -82,13 +82,14 @@ public class Ejecución {
             }
 
             if (inst.getTipo().equals("OPERACION")) {
-                // TODO: Resolver Operación
-                System.out.println("ES OPERACIÓN");
+                ArrayList<Object> listaValores = realizarOperacion(inst.getParamCola(), tablaRes);
+                Atributo atributoOperacion = new Atributo(listaValores);
+                tablaFinal.agregarAtributo(atributoOperacion);
             }
 
             if (inst.getTipo().equals("FUNCION")) {
-                // TODO: Funciones
-                System.out.println("ES FUNCIÓN");
+                Atributo atributoFuncion = realizarFuncion(inst.getParamCola(), tablaRes);
+                tablaFinal.agregarAtributo(atributoFuncion);
             }
         }
     }
@@ -194,6 +195,272 @@ public class Ejecución {
         return null;
     }
 
+    public ArrayList realizarOperacion (Cola<Token> operacion, Tabla tablaRes) {
+        ArrayList<Integer> valoresResultado = new ArrayList<Integer>();        
+        Cola<Token> operacionNumerica;
+        String operacionString;
+        int resultado;
+        
+        
+        operacion.imprimirCola();
+        
+        if (existeID(operacion, tablaRes)) {
+            // i ES EL NÚMERO DE REGISTRO ACTUAL
+            for (int i = 0 ; i < tablaRes.getListaAtributos().get(0).getListaValores().size() ; i++) {
+                
+                // CAMBIA TODOS LOS IDS POR SU VALOR RESPECTIVO DEL REGISTRO ACTUAL
+                operacionNumerica = cambiar_ID_por_numero(operacion, tablaRes, i);
+            
+                // DEBUG
+                operacionNumerica.imprimirCola();
+                
+                operacionString = crearStringOperacion(operacionNumerica);
+            
+                // DEBUG
+                System.out.println(operacionString);
+            
+            
+                InfijasAPosfijas op = new InfijasAPosfijas();
+                resultado = op.operarExpresion(operacionString);
+                valoresResultado.add(resultado); 
+            }  
+        } else {
+            operacionString = crearStringOperacion(operacion);
+            InfijasAPosfijas op = new InfijasAPosfijas();
+            resultado = op.operarExpresion(operacionString);
+            valoresResultado.add(resultado);
+        }
+        return valoresResultado;
+    }
+    
+    
+    
+    
+    public boolean existeID (Cola<Token> operacion, Tabla tablaRes) {
+        for (int i = 0 ; i < operacion.getSize() ; i++) {
+            if (operacion.buscar_por_orden(i).getTipo().equals("ID")) {
+                // VERIFICA QUE NO SEA TIPO 'N'
+                Atributo at = buscarAtributo(operacion.buscar_por_orden(i).getTokenValor(), tablaRes);
+                if (at.getTipo() != 'N') {
+                    JOptionPane.showMessageDialog(null, "Se intentó operar con columna no numérica", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+                }               
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public Cola<Token> cambiar_ID_por_numero (Cola<Token> operacion, Tabla tablaRes, int numRegistro) {
+        int valorActual;
+        Cola<Token> operacionCopia = copiarCola(operacion);
+        
+        // RECORRE COLA PARA BUSCAR TOKENS QUE SEAN DE TIPO ID
+        for (int i = 0 ; i < operacionCopia.getSize() ; i++) {
+            Token to = operacionCopia.buscar_por_orden(i);
+            
+            if (to.getTipo().equals("ID")) {
+                
+                valorActual = Integer.parseInt(buscarAtributo(to.getTokenValor(), tablaRes).getListaValores().get(numRegistro).toString());
+                operacionCopia.buscar_por_orden(i).setTipo("NUMBER");
+                operacionCopia.buscar_por_orden(i).setTokenValor(String.valueOf(valorActual));
+            }            
+        }  
+        return operacionCopia;
+    }
+    
+    // COPIADO NORMAL SIGUE REFIRIÉNDOSE A ESA COLA
+    public Cola<Token> copiarCola (Cola<Token> cola) {
+        Cola<Token> colaCopia = new Cola();
+        
+        for (int i = 0 ; i < cola.getSize() ; i++) {
+            Token to  = new Token();
+            to.setTipo(cola.buscar_por_orden(i).getTipo());
+            to.setTokenValor(cola.buscar_por_orden(i).getTokenValor());
+            to.setIndex(cola.buscar_por_orden(i).getIndex());
+            colaCopia.agregar(to);
+        }
+        
+        return colaCopia;
+    }
+    
+    public Atributo realizarFuncion (Cola<Token> funcion, Tabla tablaRes) {
+        
+        String identFuncion = funcion.buscar_por_orden(0).getTipo();
+        Atributo atributoRes;
+        
+        if (identFuncion.equals(Tokenizer.MAX)) {
+            if (funcion.getSize() != 4) {
+                JOptionPane.showMessageDialog(null, "Se brindó un número erróneo de parámetros para la función", "ERROR",
+                            JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+            atributoRes = AplicarMax(funcion.buscar_por_orden(2), tablaRes);
+            return atributoRes;
+        }
+        
+        if (identFuncion.equals(Tokenizer.MIN)) {
+            if (funcion.getSize() != 4) {
+                JOptionPane.showMessageDialog(null, "Se brindó un número erróneo de parámetros para la función", "ERROR",
+                            JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+            atributoRes = AplicarMin(funcion.buscar_por_orden(2), tablaRes);
+            return atributoRes;
+        }
+        
+        if (identFuncion.equals(Tokenizer.AVG)) {
+            if (funcion.getSize() != 4) {
+                JOptionPane.showMessageDialog(null, "Se brindó un número erróneo de parámetros para la función", "ERROR",
+                            JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+            atributoRes = AplicarAvg(funcion.buscar_por_orden(2), tablaRes);
+            return atributoRes;
+        }        
+        return null;
+    }
+    
+    public Atributo AplicarMax(Token tok, Tabla tablaRes) {
+        if (tok.getTipo().equals(Tokenizer.ID)) {
+        Atributo atributo = buscarAtributo(tok.getTokenValor(), tablaRes);
+
+            if (atributo != null) {
+                if (atributo.getTipo() == 'N') {
+                    Object maximo = encontrarMaximo(atributo.getListaValores());
+
+                    Atributo atributoMaximo = new Atributo(Integer.parseInt((String)maximo),tablaRes.getListaAtributos().get(0).getListaValores().size());
+                    atributoMaximo.setNombre("MAX(" + atributo.getNombre() +")");
+                
+                    return atributoMaximo;
+//                    tablaFinal.agregarAtributo(atributoMaximo);
+                } else {
+                    JOptionPane.showMessageDialog(null, "El atributo debe ser de tipo numérico para aplicar MAX", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Se esperaba un ID para aplicar MAX", "ERROR",
+                JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }
+
+    // Método auxiliar para encontrar el máximo valor en una lista de objetos comparables
+    private Object encontrarMaximo(ArrayList<Object> listaValores) {
+        if (!listaValores.isEmpty()) {
+            Object maximo = listaValores.get(0);
+            for (Object valor : listaValores) {
+                if (((Comparable) valor).compareTo(maximo) > 0) {
+                    maximo = valor;
+                }
+            }
+            return maximo;
+        } else {
+            // Manejar el caso cuando la lista está vacía
+            return null;
+        }
+    }
+
+    // Método para aplicar la función MIN a un atributo
+    public Atributo AplicarMin(Token tok, Tabla tablaRes) {
+        if (tok.getTipo().equals(Tokenizer.ID)) {
+            Atributo atributo = buscarAtributo(tok.getTokenValor(), tablaRes);
+
+            if (atributo != null) {
+                if (atributo.getTipo() == 'N') {
+                    Object minimo = encontrarMinimo(atributo.getListaValores());
+
+                    Atributo atributoMinimo = new Atributo(Integer.parseInt((String) minimo), tablaRes.getListaAtributos().get(0).getListaValores().size());
+                    atributoMinimo.setNombre("MIN(" + atributo.getNombre() + ")");
+
+                    return atributoMinimo;
+                    //tablaFinal.agregarAtributo(atributoMinimo);
+                } else {
+                    JOptionPane.showMessageDialog(null, "El atributo debe ser de tipo numérico para aplicar MIN", "ERROR",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Se esperaba un ID para aplicar MIN", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }
+
+    // Método para aplicar la función AVG a un atributo
+    public Atributo AplicarAvg(Token tok, Tabla tablaRes) {
+        if (tok.getTipo().equals(Tokenizer.ID)) {
+            Atributo atributo = buscarAtributo(tok.getTokenValor(), tablaRes);
+
+            if (atributo != null) {
+                if (atributo.getTipo() == 'N') {
+                    double promedio = encontrarPromedio(atributo.getListaValores());
+
+                    Atributo atributoPromedio = new Atributo(String.format("%.4f", promedio), tablaRes.getListaAtributos().get(0).getListaValores().size());
+                    atributoPromedio.setNombre("AVG(" + atributo.getNombre()+ ")");
+
+                    return atributoPromedio;
+                    //tablaFinal.agregarAtributo(atributoPromedio);
+                } else {
+                    JOptionPane.showMessageDialog(null, "El atributo debe ser de tipo numérico para aplicar AVG", "ERROR",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Se esperaba un ID para aplicar AVG", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }
+
+    // Método auxiliar para encontrar el mínimo valor en una lista de objetos comparables
+    private Object encontrarMinimo(ArrayList<Object> listaValores) {
+        if (!listaValores.isEmpty()) {
+            Object minimo = listaValores.get(0);
+            for (Object valor : listaValores) {
+                if (((Comparable) valor).compareTo(minimo) < 0) {
+                    minimo = valor;
+                }
+            }
+            return minimo;
+        } else {
+            // Manejar el caso cuando la lista está vacía
+            return null;
+        }
+    }
+
+    // Método auxiliar para encontrar el promedio en una lista de objetos numericos
+    private double encontrarPromedio(ArrayList<Object> listaValores) {
+        if (!listaValores.isEmpty()) {
+            double suma = 0;
+            for (Object valor : listaValores) {
+                suma += Double.parseDouble(valor.toString());
+            }
+            return suma / listaValores.size();
+        } else {
+            // Manejar el caso cuando la lista está vacía
+            return 0;
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /*
      * public DefaultTableModel crear_modelo_tabla(Object[] parametros, int
      * num_elementos) {
@@ -415,10 +682,8 @@ public class Ejecución {
         Cola<Token> colaSelect = (Cola<Token>) parametroListaColumnas;
         String operacion = "";
 
-        for (int i = 0; i < colaSelect.getSize(); i++) {
-            if (colaSelect.buscar_por_orden(i).getTipo().equals("ARIT")) {
-                operacion = operacion + colaSelect.buscar_por_orden(i).getTokenValor();
-            }
+        for (int i = 0; i < colaSelect.getSize(); i++) {           
+            operacion = operacion + colaSelect.buscar_por_orden(i).getTokenValor();           
         }
 
         // DEBUG

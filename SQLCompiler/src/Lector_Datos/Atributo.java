@@ -30,6 +30,16 @@ public class Atributo  {
     public Atributo(){
     }
     
+    // Para crear atributos RESULTADOS DE OPERACIÓN
+    public Atributo(ArrayList<Object> listaValores){
+        this.codigo = 0;
+        this.nombre = "OPERACION";
+        this.tipo = 'N';
+        this.longitud = this.nombre.length();
+        this.decimales = 0;
+        this.listaValores = listaValores;
+    }
+
     // Para crear atributos CONSTANTES (numerales)
     public Atributo(int constanteInt, int numRegistros){
         this.codigo = 0;
@@ -40,7 +50,7 @@ public class Atributo  {
         this.listaValores = crearListaConstante(Integer.toString(constanteInt), numRegistros);
     }
     
-    // Para crear atributos CONSTANTES (numerales)
+    // Para crear atributos CONSTANTES (strings)
     public Atributo(String constanteStr, int numRegistros){
         this.codigo = 0;
         this.nombre = constanteStr;

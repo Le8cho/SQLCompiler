@@ -72,6 +72,10 @@ public class Reglas {
             if (operacion_aritmetica()) {
                 Sintáctico.indexColaTokens++;
                 esperaColumna = false;
+                
+            } else if (funcion()) {
+                Sintáctico.indexColaTokens++;
+                esperaColumna = false;
     
             } else if (tipoToken.equals(Tokenizer.ID) || tipoToken.equals(Tokenizer.ASTERISK) || tipoToken.equals(Tokenizer.NUMBER) || tipoToken.equals(Tokenizer.STRING) || tipoToken.equals(Tokenizer.OPEN_P)) {
 
@@ -193,8 +197,82 @@ public class Reglas {
                 return false;
             }
         }
- 
     }   
+    
+    public boolean funcion() {
+        Cola<Token> funcion = new Cola();
+        int indiceCopia = Sintáctico.indexColaTokens;
+        String tipoActual;
+        int numeroArgumentos = 0;
+        boolean esperaParam = true;
+        
+        // DEBUG
+        System.out.println(indiceCopia);
+            
+        Token to = (Token) Sintáctico.colaTokens.buscar_por_orden(indiceCopia);
+        tipoActual = to.getTipo();
+            
+        if (!(tipoActual.equals(Tokenizer.MAX) || tipoActual.equals(Tokenizer.MIN) || tipoActual.equals(Tokenizer.AVG) || tipoActual.equals(Tokenizer.LEFT) || tipoActual.equals(Tokenizer.RIGHT))) {
+            return false;   
+        }
+            
+        funcion.agregar(to);
+        indiceCopia++;
+        to = (Token) Sintáctico.colaTokens.buscar_por_orden(indiceCopia);
+        tipoActual = to.getTipo();
+            
+        if (!tipoActual.equals(Tokenizer.OPEN_P)) {
+            JOptionPane.showMessageDialog(null, "Error en función: se esperaba '('", "ERROR", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        funcion.agregar(to);
+        indiceCopia++;
+            
+        while (true) {    
+            
+            to = (Token) Sintáctico.colaTokens.buscar_por_orden(indiceCopia);
+            tipoActual = to.getTipo();
+            
+            if (tipoActual.equals(Tokenizer.ID)) {
+                if (!esperaParam) {
+                    JOptionPane.showMessageDialog(null, "Error en función: se esperaba ',' o ')'", "ERROR", JOptionPane.ERROR_MESSAGE);
+                }
+                funcion.agregar(to);
+                indiceCopia++;
+                numeroArgumentos++;
+                esperaParam = false;
+                
+            } else if (tipoActual.equals(Tokenizer.COMMA)) {
+                if (esperaParam) {
+                    JOptionPane.showMessageDialog(null, "Error de sintaxis: Se esperaba ID", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                funcion.agregar(to);
+                indiceCopia++;
+                esperaParam = true;
+                
+            } else if (tipoActual.equals(Tokenizer.CLOSE_P)) {
+                if ((numeroArgumentos >= 3) || (numeroArgumentos == 0)) {
+                    JOptionPane.showMessageDialog(null, "Error en función: Número insuficiente de argumentos", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                funcion.agregar(to);
+                // DEBUG
+                funcion.imprimirCola();
+                
+                instruccionesFinal.insertarSelect(funcion);
+                
+                // NO SE RESTA 1 PORQUE SE SABE QUE ACABÓ CUANDO CIERRA PARÉNTESIS (NO NECESITA ANALIZAR SIGUIENTE)
+                Sintáctico.indexColaTokens = indiceCopia;
+                return true;
+  
+            }
+            else {
+                return false;
+            }
+        }
+    }
+    
     
     public boolean nombre_tabla() {
         if (!Sintáctico.tipo_actual().equals("ID")) {
