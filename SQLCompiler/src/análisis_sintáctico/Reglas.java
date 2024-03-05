@@ -35,12 +35,34 @@ public class Reglas {
         if (!lista_tablas()) {
             return null;
         }
+        Sintáctico.indexColaTokens++;
         if (!where()) {
+            // Si no hay un where pero sí un order by
+            if(!order_by()) {
+                return instruccionesFinal;
+            }
             //si no halla where que retorne los parametros que se han reunido hasta ahora
+            System.out.print("NO HAY WHERE PERO SÍ ORDER BY");
+            instruccionesFinal.getInstrOrder().imprimirCola();
+        
+            return instruccionesFinal;
+        }
+        
+        // DEBUG
+        System.out.println("ENTRA A ORDER BY CON WHERE: " +Sintáctico.indexColaTokens);
+        if (!order_by()) {
+            // DEBUG
+            System.out.print("NO HAY ORDER BY");
+            
+            instruccionesFinal.getListaWhere().get(0).imprimirCola();
             return instruccionesFinal;
         }
         
         //TODO: IMPLEMENTAR ORDER BY
+        
+        instruccionesFinal.getListaWhere().get(0).imprimirCola();
+        System.out.print("Cola order by: ");
+        instruccionesFinal.getInstrOrder().imprimirCola();
         
         return instruccionesFinal;
     }
@@ -273,6 +295,47 @@ public class Reglas {
         }
     }
     
+    public boolean order_by() {
+        Cola<Token> colaOB = new Cola<Token>();
+        
+        if(Sintáctico.indexColaTokens >= Sintáctico.colaTokens.getSize()){
+            return false;
+        }
+        if (!Sintáctico.tipo_actual().equals(Tokenizer.ORDER)) {
+            return false;
+        }
+        colaOB.agregar((Token) Sintáctico.colaTokens.buscar_por_orden(Sintáctico.indexColaTokens));
+        Sintáctico.indexColaTokens++;
+        
+        if (!Sintáctico.tipo_actual().equals(Tokenizer.BY)) {
+            JOptionPane.showMessageDialog(null, "ORDER BY: Se esperaba un 'BY'", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        colaOB.agregar((Token) Sintáctico.colaTokens.buscar_por_orden(Sintáctico.indexColaTokens));
+        Sintáctico.indexColaTokens++;
+        
+        if (!Sintáctico.tipo_actual().equals(Tokenizer.ID)) {
+            JOptionPane.showMessageDialog(null, "ORDER BY: Se esperaba un ID", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }      
+        colaOB.agregar((Token) Sintáctico.colaTokens.buscar_por_orden(Sintáctico.indexColaTokens));
+        // Si todavía no se ha llegado al final de la cola de tokens
+        if(Sintáctico.indexColaTokens < Sintáctico.colaTokens.getSize()){
+            Sintáctico.indexColaTokens++;
+            
+            if (!Sintáctico.tipo_actual().equals(Tokenizer.ASC) && !Sintáctico.tipo_actual().equals(Tokenizer.DESC)) {
+                // IGNORA CARACTERES DESPUÉS DE ESTE PUNTO
+                return false;
+            }
+            colaOB.agregar((Token) Sintáctico.colaTokens.buscar_por_orden(Sintáctico.indexColaTokens));
+            instruccionesFinal.setInstrOrder(colaOB);
+            return true;
+        }
+        instruccionesFinal.setInstrOrder(colaOB);
+        return true;
+    }
     
     public boolean nombre_tabla() {
         if (!Sintáctico.tipo_actual().equals("ID")) {
@@ -281,8 +344,6 @@ public class Reglas {
         // parametros[1] = Sintáctico.valor_actual();
         // Reemplazado por:
         instruccionesFinal.setTabla(Sintáctico.valor_actual());       
-        //Avanzamos al siguiente token
-        Sintáctico.indexColaTokens++;
         return true;
     }
 
@@ -303,8 +364,8 @@ public class Reglas {
         Cola<Token> colaTokensLogicos = new Cola<>();
 
         //1.Recogemos los tokens
-        while (true) {
-
+        //while (true) {
+        for (int i = 0 ; i < 3 ; i++) {  
             Token token = Sintáctico.token_actual();
             colaTokensLogicos.agregar(token);
             //Si estamos en el ultimo indice y agregamos el ultimo token salir del while
@@ -399,6 +460,11 @@ public class Reglas {
                 } else {
                     return false;
                 }
+            } else if(tokenTipo.equals(Tokenizer.ORDER)) {
+                
+                instruccionesFinal.insertarWhere(colaTokensLogicos);      
+                return true;
+                
             }
             else{
                 //un token incongruente para el where

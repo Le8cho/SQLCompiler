@@ -22,12 +22,14 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Ejecución {
 
+    ArrayList<Integer> indicesFinal = new ArrayList <>();
     ArrayList<Tabla> base = new ArrayList<>();
     Tabla tablaFinal;
 
     public Ejecución(ArrayList baseTablas) {
         this.base = baseTablas;
         this.tablaFinal = new Tabla();
+        this.indicesFinal = new ArrayList<>();
     }
 
     public DefaultTableModel crear_tabla_resultado(Lista_Instrucciones instrucciones) {
@@ -42,7 +44,18 @@ public class Ejecución {
         }
 
         aplicarSelect(instrucciones.getListaSelect(), tablaRes);
-
+        
+        if (!instrucciones.getInstrOrder().estaVacio()) {
+            aplicarOrder(instrucciones.getInstrOrder(), tablaFinal);
+        }
+        
+        // DEBUG
+        System.out.println(indicesFinal);
+        
+        if (!instrucciones.getListaWhere().isEmpty()) {
+            aplicarWhere(instrucciones.getListaWhere(), tablaFinal);
+        }
+ 
         modelo = crearModelo(tablaFinal, modelo);
 
         return modelo;
@@ -57,7 +70,6 @@ public class Ejecución {
                 if (at == null) {
                     JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR",
                             JOptionPane.ERROR_MESSAGE);
-                    // return null;
                 }
 
                 tablaFinal.agregarAtributo(at);
@@ -96,18 +108,59 @@ public class Ejecución {
 
     public void aplicarWhere(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes) {
 
+        // DEBUG
+        System.out.println(indicesFinal);
+        
+        
         Atributo atributoRes = buscarAtributo(listaWhere.get(0).buscar_por_orden(0).getTokenValor(), tablaRes);
 
         if (atributoRes == null) {
             JOptionPane.showMessageDialog(null, "No se encontró el atributo buscado", "ERROR",
                     JOptionPane.ERROR_MESSAGE);
-            // return null;
         }
 
-        filtrarFilas(listaWhere, tablaRes, atributoRes);
+        if (indicesFinal.isEmpty()) {
+            indicesFinal = filtrarFilas(listaWhere, tablaRes, atributoRes);
+            
+        } else {
+            // SE OBTIENE LA FILA DE ELEMENTOS QUE CUMPLEN
+            ArrayList<Integer> indicesOK = filtrarFilas(listaWhere, tablaRes, atributoRes);
+            ArrayList<Integer> indices_a_borrar = filtrarFilas(listaWhere, tablaRes, atributoRes);
+            
+            for (int i = 0; i < indicesFinal.size(); i++) {
+            if (!indicesOK.contains(indicesFinal.get(i))) {
+                indicesFinal.remove(i);
+                i--; // Decrementar el índice para evitar saltar elementos
+            }
+        }
+            
 
+            
+            // DEBUG
+            System.out.println(indicesFinal);
+        }       
     }
 
+    public void aplicarOrder(Cola<Token> instrOrder, Tabla tablaRes) {
+        Atributo atributoRes = buscarAtributo(instrOrder.buscar_por_orden(2).getTokenValor(), tablaRes);
+        ArrayList<Integer> indicesTemp = new ArrayList<>();
+        
+        if (atributoRes.getTipo() != 'N') {
+            JOptionPane.showMessageDialog(null, "No se puede ordenar una cadena", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+        } else {            
+            if (instrOrder.getSize() == 4) {
+                if (instrOrder.buscar_por_orden(3).getTokenValor().equals("DESC"))
+                    indicesTemp = ordenarDescendente(atributoRes.getListaValores());
+            } else {
+                indicesTemp = ordenarAscendente(atributoRes.getListaValores());
+            }
+   
+            // AGREGAR ÍNDICES A LA LISTA FINAL
+            indicesFinal = indicesTemp;    
+        }
+    }   
+    
     public Tabla buscarTabla(String tablaBuscada) {
         Tabla tabla_resultado = null;
 
@@ -134,34 +187,105 @@ public class Ejecución {
         return atributo_resultado;
     }
 
-    public void filtrarFilas(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes, Atributo atributoRes) {
+    public ArrayList<Integer> filtrarFilas(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes, Atributo atributoRes) {
         String operador = listaWhere.get(0).buscar_por_orden(1).getTokenValor();
         Token tokenCondicion = listaWhere.get(0).buscar_por_orden(2);
-
-        // Número de registro que agregaremos a la tabla
-        int indice;
+        // DEBUG
+        System.out.println(tokenCondicion.getTokenValor());
+        System.out.println(atributoRes.getNombre());
+        System.out.println(atributoRes.getListaValores().get(0).toString());
+        
+        ArrayList<Integer> indices = new ArrayList<>();
 
         if (operador.equals("<")) {
             if (tokenCondicion.getTipo().equals("NUMBER")) {
+                // Recorre todos los valores del atributo
                 for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
                     if ((int) atributoRes.getListaValores().get(i) < Integer.parseInt(tokenCondicion.getTokenValor())) {
-                        indice = atributoRes.getListaValores().indexOf(i);
-
+                        indices.add(i);
+                        return indices;
                     }
-
                 }
-
             } else {
                 JOptionPane.showMessageDialog(null, "Se esperaba un number para esta operación WHERE", "ERROR",
                         JOptionPane.ERROR_MESSAGE);
             }
 
+        } else
+        if (operador.equals("<=")) {
+            if (tokenCondicion.getTipo().equals("NUMBER")) {
+                // Recorre todos los valores del atributo
+                for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
+                    if ((int) atributoRes.getListaValores().get(i) <= Integer.parseInt(tokenCondicion.getTokenValor())) {
+                        indices.add(i);
+                        return indices;
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Se esperaba un number para esta operación WHERE", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+        } else
+        if (operador.equals(">")) {
+            if (tokenCondicion.getTipo().equals("NUMBER")) {
+                // Recorre todos los valores del atributo
+                for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
+                    if ((int) atributoRes.getListaValores().get(i) > Integer.parseInt(tokenCondicion.getTokenValor())) {
+                        indices.add(i);
+                        return indices;
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Se esperaba un number para esta operación WHERE", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+        } else
+        if (operador.equals(">=")) {
+            if (tokenCondicion.getTipo().equals("NUMBER")) {
+                // Recorre todos los valores del atributo
+                for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
+                    if ((int) atributoRes.getListaValores().get(i) >= Integer.parseInt(tokenCondicion.getTokenValor())) {
+                        indices.add(i);
+                        return indices;
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Se esperaba un number para esta operación WHERE", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+        } else
+        if (operador.equals("=")) {
+            if (tokenCondicion.getTipo().equals("NUMBER")) {
+                // Recorre todos los valores del atributo
+                for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
+                    if ( Integer.parseInt(String.valueOf(atributoRes.getListaValores().get(i))) == Integer.parseInt(tokenCondicion.getTokenValor())) {
+                        indices.add(i);   
+                    }       
+                }
+                return indices;
+                
+            } else if (tokenCondicion.getTipo().equals("STRING")) {
+                // Recorre todos los valores del atributo
+                for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
+                        
+                    String valorActual = '\'' + atributoRes.getListaValores().get(i).toString() + '\'';
+                    if (valorActual.equals(tokenCondicion.getTokenValor())) {
+                        indices.add(i);
+                        
+                        System.out.println(indices); 
+                    }
+                }     
+                return indices;
+                
+            } else {
+                JOptionPane.showMessageDialog(null, "Se esperaba un number o string para esta operación WHERE", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
-
-    }
-
-    public void agregarFila(Tabla tablaRes, int indice) {
-
+        return indices;
     }
 
     public DefaultTableModel crearModelo(Tabla tabla, DefaultTableModel modelo) {
@@ -174,27 +298,61 @@ public class Ejecución {
 
         modelo.setColumnIdentifiers(nombreColumnas);
 
-        try {
+        //DEBUG
+        System.out.println(indicesFinal);
+        
+        if (!indicesFinal.isEmpty()) {
+            try {
 
-            Object[] fila = new Object[modelo.getColumnCount()];
+                Object[] fila = new Object[modelo.getColumnCount()];
 
-            for (int i = 0; i < tabla.getListaAtributos().get(0).getListaValores().size(); i++) {
+                // Recorre las filas
+                for (int i : indicesFinal) {
 
-                for (int j = 0; j < modelo.getColumnCount(); j++) {
+                    // DEBUG
+                    System.out.println("REGISTRO ACTUAL: " + i);
+                    
+                    // Recorre los atributos
+                    for (int j = 0; j < modelo.getColumnCount(); j++) {
 
-                    fila[j] = tabla.getListaAtributos().get(j).getListaValores().get(i);
+                        fila[j] = tabla.getListaAtributos().get(j).getListaValores().get(i);
+                    }
+                    
+                    modelo.addRow(fila);
+
                 }
-                modelo.addRow(fila);
-
+                return modelo;
+            } catch (Exception ex) {
+                System.err.println("Ha ocurrido un error al leer la tabla");
             }
-            return modelo;
-        } catch (Exception ex) {
-            System.err.println("Ha ocurrido un error al leer la tabla");
+   
+        } else {
+            try {
+
+                Object[] fila = new Object[modelo.getColumnCount()];
+
+                for (int i = 0; i < tabla.getListaAtributos().get(0).getListaValores().size(); i++) {
+
+                    for (int j = 0; j < modelo.getColumnCount(); j++) {
+
+                        fila[j] = tabla.getListaAtributos().get(j).getListaValores().get(i);
+                    }
+                    modelo.addRow(fila);
+
+                }
+                return modelo;
+            } catch (Exception ex) {
+                System.err.println("Ha ocurrido un error al leer la tabla");
+            }
         }
 
         return null;
     }
 
+    
+    
+    
+    
     public ArrayList realizarOperacion (Cola<Token> operacion, Tabla tablaRes) {
         ArrayList<Integer> valoresResultado = new ArrayList<Integer>();        
         Cola<Token> operacionNumerica;
@@ -232,10 +390,7 @@ public class Ejecución {
         }
         return valoresResultado;
     }
-    
-    
-    
-    
+
     public boolean existeID (Cola<Token> operacion, Tabla tablaRes) {
         for (int i = 0 ; i < operacion.getSize() ; i++) {
             if (operacion.buscar_por_orden(i).getTipo().equals("ID")) {
@@ -283,6 +438,10 @@ public class Ejecución {
         
         return colaCopia;
     }
+    
+    
+    
+    
     
     public Atributo realizarFuncion (Cola<Token> funcion, Tabla tablaRes) {
         
@@ -394,6 +553,22 @@ public class Ejecución {
         return null;
     }
 
+    // Método auxiliar para encontrar el mínimo valor en una lista de objetos comparables
+    private Object encontrarMinimo(ArrayList<Object> listaValores) {
+        if (!listaValores.isEmpty()) {
+            Object minimo = listaValores.get(0);
+            for (Object valor : listaValores) {
+                if (((Comparable) valor).compareTo(minimo) < 0) {
+                    minimo = valor;
+                }
+            }
+            return minimo;
+        } else {
+            // Manejar el caso cuando la lista está vacía
+            return null;
+        }
+    }
+    
     // Método para aplicar la función AVG a un atributo
     public Atributo AplicarAvg(Token tok, Tabla tablaRes) {
         if (tok.getTipo().equals(Tokenizer.ID)) {
@@ -423,22 +598,6 @@ public class Ejecución {
         return null;
     }
 
-    // Método auxiliar para encontrar el mínimo valor en una lista de objetos comparables
-    private Object encontrarMinimo(ArrayList<Object> listaValores) {
-        if (!listaValores.isEmpty()) {
-            Object minimo = listaValores.get(0);
-            for (Object valor : listaValores) {
-                if (((Comparable) valor).compareTo(minimo) < 0) {
-                    minimo = valor;
-                }
-            }
-            return minimo;
-        } else {
-            // Manejar el caso cuando la lista está vacía
-            return null;
-        }
-    }
-
     // Método auxiliar para encontrar el promedio en una lista de objetos numericos
     private double encontrarPromedio(ArrayList<Object> listaValores) {
         if (!listaValores.isEmpty()) {
@@ -451,6 +610,63 @@ public class Ejecución {
             // Manejar el caso cuando la lista está vacía
             return 0;
         }
+    }
+    
+    public ArrayList<Integer> ordenarAscendente(ArrayList<Object> lista) {
+        int n = lista.size();
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            indices.add(i); // Inicializar índices
+        }
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if ( Integer.parseInt(String.valueOf(lista.get(j))) >  Integer.parseInt(String.valueOf(lista.get(j + 1)))) {
+                    // Intercambiar valores
+                    int temp = Integer.parseInt(String.valueOf(lista.get(j)));
+                    lista.set(j, lista.get(j + 1));
+                    lista.set(j + 1, temp);
+
+                    // Intercambiar índices
+                    int tempIndex = indices.get(j);
+                    indices.set(j, indices.get(j + 1));
+                    indices.set(j + 1, tempIndex);
+                }
+            }
+        }
+        
+        // DEBUG
+        System.out.println("ORDEN ASC: "+ indices);
+        
+        return indices;
+    }
+    
+    public ArrayList<Integer> ordenarDescendente(ArrayList<Object> lista) {
+        int n = lista.size();
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            indices.add(i); // Inicializar índices
+        }
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (Integer.parseInt(String.valueOf(lista.get(j))) < Integer.parseInt(String.valueOf(lista.get(j + 1)))) {
+                    // Intercambiar valores
+                    int temp = Integer.parseInt(String.valueOf(lista.get(j)));
+                    lista.set(j, lista.get(j + 1));
+                    lista.set(j + 1, temp);
+
+                    // Intercambiar índices
+                    int tempIndex = indices.get(j);
+                    indices.set(j, indices.get(j + 1));
+                    indices.set(j + 1, tempIndex);
+                }
+            }
+        }
+        // DEBUG
+        System.out.println("ORDEN DESC: "+ indices);
+        
+        return indices;
     }
     
     

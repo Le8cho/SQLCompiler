@@ -17,11 +17,13 @@ public class Lista_Instrucciones {
     private String tabla;
     private ArrayList<Inst_Select> listaSelect;
     private ArrayList<Cola<Token>> listaWhere;
+    private Cola<Token> instrOrder;
 
     public Lista_Instrucciones() {
         this.listaSelect = new ArrayList();
         this.listaWhere = new ArrayList();
         this.tabla = "";
+        this.instrOrder = new Cola<Token>();
     }
       
     public void insertarSelect(Cola<Token> cola) {
@@ -55,5 +57,13 @@ public class Lista_Instrucciones {
     public void setListaWhere(ArrayList<Cola<Token>> listaWhere) {
         this.listaWhere = listaWhere;
     }   
+
+    public Cola<Token> getInstrOrder() {
+        return instrOrder;
+    }
+
+    public void setInstrOrder(Cola<Token> instrOrder) {
+        this.instrOrder = instrOrder;
+    }
     
 }
