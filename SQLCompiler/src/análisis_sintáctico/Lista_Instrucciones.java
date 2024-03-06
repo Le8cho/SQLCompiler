@@ -35,6 +35,30 @@ public class Lista_Instrucciones {
         this.listaWhere.add(cola);
     }
 
+    public void mostrarInstrucciones() {
+        if (!listaSelect.isEmpty()) {
+            System.out.println("LISTA DE INSTRUCCIONES: ");
+            for (int i = 0 ; i < listaSelect.size() ; i++) {
+                if (listaSelect.get(i).getParamCola() == null) {
+                    System.out.println(listaSelect.get(i).getParamToken());
+                } else {
+                    listaSelect.get(i).getParamCola().imprimirCola();
+                }
+            }
+        }
+        System.out.println("");
+        if (!listaWhere.isEmpty()) {
+            for (int i = 0 ; i < listaWhere.size() ; i++) {
+                listaWhere.get(i).imprimirCola();
+            }
+        }
+        System.out.println("");
+        if (!instrOrder.estaVacio()) {
+            instrOrder.imprimirCola();
+        }
+    }
+    
+    
     public String getTabla() {
         return tabla;
     }

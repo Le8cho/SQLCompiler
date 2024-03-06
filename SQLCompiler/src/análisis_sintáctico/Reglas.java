@@ -321,9 +321,10 @@ public class Reglas {
             return false;
         }      
         colaOB.agregar((Token) Sintáctico.colaTokens.buscar_por_orden(Sintáctico.indexColaTokens));
+        Sintáctico.indexColaTokens++;
         // Si todavía no se ha llegado al final de la cola de tokens
         if(Sintáctico.indexColaTokens < Sintáctico.colaTokens.getSize()){
-            Sintáctico.indexColaTokens++;
+            //Sintáctico.indexColaTokens++;
             
             if (!Sintáctico.tipo_actual().equals(Tokenizer.ASC) && !Sintáctico.tipo_actual().equals(Tokenizer.DESC)) {
                 // IGNORA CARACTERES DESPUÉS DE ESTE PUNTO

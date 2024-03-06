@@ -203,6 +203,7 @@ public class Menu_Tablas extends javax.swing.JFrame {
 //        
 //        Cola<Token> colaTokensLogicos = (Cola<Token>) parametros[2];
 //        colaTokensLogicos.imprimirCola();
+        instrucciones.mostrarInstrucciones();
         
         Ejecución ej = new Ejecución(baseTabla);
         DefaultTableModel mo = ej.crear_tabla_resultado(instrucciones);

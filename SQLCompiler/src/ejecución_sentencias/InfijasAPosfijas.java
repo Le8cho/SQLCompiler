@@ -104,12 +104,12 @@ public class InfijasAPosfijas {
         return pila.desapilar();
     }
 
-    public static int operarExpresion(String expresionInfija) {
+    public int operarExpresion(String expresionInfija) {
         String expresionPosfija = infijoAPosfijo(expresionInfija);
-        System.out.println("Expresión infija: " + expresionInfija);
-        System.out.println("Expresión posfija: " + expresionPosfija);
+        //System.out.println("Expresión infija: " + expresionInfija);
+        //System.out.println("Expresión posfija: " + expresionPosfija);
         int resultado = operarExpresionPosfija(expresionPosfija);
-        System.out.println("El resultado es: " + resultado);
+        //System.out.println("El resultado es: " + resultado);
         return resultado;
     }
 }

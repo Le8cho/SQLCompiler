@@ -25,11 +25,13 @@ public class Ejecución {
     ArrayList<Integer> indicesFinal = new ArrayList <>();
     ArrayList<Tabla> base = new ArrayList<>();
     Tabla tablaFinal;
+    boolean detectoFuncion;
 
     public Ejecución(ArrayList baseTablas) {
         this.base = baseTablas;
         this.tablaFinal = new Tabla();
         this.indicesFinal = new ArrayList<>();
+        this.detectoFuncion = false;
     }
 
     public DefaultTableModel crear_tabla_resultado(Lista_Instrucciones instrucciones) {
@@ -46,17 +48,14 @@ public class Ejecución {
         aplicarSelect(instrucciones.getListaSelect(), tablaRes);
         
         if (!instrucciones.getInstrOrder().estaVacio()) {
-            aplicarOrder(instrucciones.getInstrOrder(), tablaFinal);
-        }
-        
-        // DEBUG
-        System.out.println(indicesFinal);
+            aplicarOrder(instrucciones.getInstrOrder(), tablaRes);
+        }       
         
         if (!instrucciones.getListaWhere().isEmpty()) {
-            aplicarWhere(instrucciones.getListaWhere(), tablaFinal);
+            aplicarWhere(instrucciones.getListaWhere(), tablaRes);
         }
  
-        modelo = crearModelo(tablaFinal, modelo);
+        modelo = crearModelo(modelo);
 
         return modelo;
     }
@@ -74,7 +73,7 @@ public class Ejecución {
 
                 tablaFinal.agregarAtributo(at);
             }
-
+            
             if (inst.getTipo().equals("*")) {
                 for (Atributo atributo : tablaRes.getListaAtributos()) {
                     tablaFinal.agregarAtributo(atributo);
@@ -96,6 +95,7 @@ public class Ejecución {
             if (inst.getTipo().equals("OPERACION")) {
                 ArrayList<Object> listaValores = realizarOperacion(inst.getParamCola(), tablaRes);
                 Atributo atributoOperacion = new Atributo(listaValores);
+                atributoOperacion.setNombre(nombrarOperacion(inst));
                 tablaFinal.agregarAtributo(atributoOperacion);
             }
 
@@ -107,11 +107,7 @@ public class Ejecución {
     }
 
     public void aplicarWhere(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes) {
-
-        // DEBUG
-        System.out.println(indicesFinal);
-        
-        
+               
         Atributo atributoRes = buscarAtributo(listaWhere.get(0).buscar_por_orden(0).getTokenValor(), tablaRes);
 
         if (atributoRes == null) {
@@ -124,38 +120,39 @@ public class Ejecución {
             
         } else {
             // SE OBTIENE LA FILA DE ELEMENTOS QUE CUMPLEN
-            ArrayList<Integer> indicesOK = filtrarFilas(listaWhere, tablaRes, atributoRes);
-            ArrayList<Integer> indices_a_borrar = filtrarFilas(listaWhere, tablaRes, atributoRes);
+            ArrayList<Integer> indicesFiltrados = filtrarFilas(listaWhere, tablaRes, atributoRes);
             
             for (int i = 0; i < indicesFinal.size(); i++) {
-            if (!indicesOK.contains(indicesFinal.get(i))) {
-                indicesFinal.remove(i);
-                i--; // Decrementar el índice para evitar saltar elementos
+                if (!indicesFiltrados.contains(indicesFinal.get(i))) {
+                    indicesFinal.remove(i);
+                    i--; // Decrementar el índice para evitar saltar elementos
+                }
             }
-        }
             
-
-            
-            // DEBUG
-            System.out.println(indicesFinal);
         }       
     }
 
     public void aplicarOrder(Cola<Token> instrOrder, Tabla tablaRes) {
         Atributo atributoRes = buscarAtributo(instrOrder.buscar_por_orden(2).getTokenValor(), tablaRes);
-        ArrayList<Integer> indicesTemp = new ArrayList<>();
+        ArrayList<Integer> indicesTemp;
         
         if (atributoRes.getTipo() != 'N') {
             JOptionPane.showMessageDialog(null, "No se puede ordenar una cadena", "ERROR",
                         JOptionPane.ERROR_MESSAGE);
         } else {            
             if (instrOrder.getSize() == 4) {
-                if (instrOrder.buscar_por_orden(3).getTokenValor().equals("DESC"))
+                if (instrOrder.buscar_por_orden(3).getTokenValor().equals("DESC")) {
+                    
                     indicesTemp = ordenarDescendente(atributoRes.getListaValores());
-            } else {
-                indicesTemp = ordenarAscendente(atributoRes.getListaValores());
-            }
-   
+                    
+                } else {
+                    
+                    indicesTemp = ordenarAscendente(atributoRes.getListaValores());
+                }
+                
+            } else {               
+                indicesTemp = ordenarAscendente(atributoRes.getListaValores());                
+            }        
             // AGREGAR ÍNDICES A LA LISTA FINAL
             indicesFinal = indicesTemp;    
         }
@@ -175,10 +172,8 @@ public class Ejecución {
     public Atributo buscarAtributo(String atributoBuscado, Tabla tablaRes) {
         Atributo atributo_resultado = null;
 
-        // System.out.println("Atributo buscado: " + atributoBuscado);
-
         for (Atributo atributo : tablaRes.getListaAtributos()) {
-            // System.out.println("Atributo: " + atributo.getNombre());
+ 
             if (atributo.getNombre().toUpperCase().equals(atributoBuscado)) {
                 atributo_resultado = atributo;
             }
@@ -190,10 +185,6 @@ public class Ejecución {
     public ArrayList<Integer> filtrarFilas(ArrayList<Cola<Token>> listaWhere, Tabla tablaRes, Atributo atributoRes) {
         String operador = listaWhere.get(0).buscar_por_orden(1).getTokenValor();
         Token tokenCondicion = listaWhere.get(0).buscar_por_orden(2);
-        // DEBUG
-        System.out.println(tokenCondicion.getTokenValor());
-        System.out.println(atributoRes.getNombre());
-        System.out.println(atributoRes.getListaValores().get(0).toString());
         
         ArrayList<Integer> indices = new ArrayList<>();
 
@@ -201,7 +192,7 @@ public class Ejecución {
             if (tokenCondicion.getTipo().equals("NUMBER")) {
                 // Recorre todos los valores del atributo
                 for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
-                    if ((int) atributoRes.getListaValores().get(i) < Integer.parseInt(tokenCondicion.getTokenValor())) {
+                    if (Integer.parseInt(String.valueOf(atributoRes.getListaValores().get(i))) < Integer.parseInt(tokenCondicion.getTokenValor())) {
                         indices.add(i);
                         return indices;
                     }
@@ -216,7 +207,7 @@ public class Ejecución {
             if (tokenCondicion.getTipo().equals("NUMBER")) {
                 // Recorre todos los valores del atributo
                 for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
-                    if ((int) atributoRes.getListaValores().get(i) <= Integer.parseInt(tokenCondicion.getTokenValor())) {
+                    if (Integer.parseInt(String.valueOf(atributoRes.getListaValores().get(i))) <= Integer.parseInt(tokenCondicion.getTokenValor())) {
                         indices.add(i);
                         return indices;
                     }
@@ -231,7 +222,7 @@ public class Ejecución {
             if (tokenCondicion.getTipo().equals("NUMBER")) {
                 // Recorre todos los valores del atributo
                 for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
-                    if ((int) atributoRes.getListaValores().get(i) > Integer.parseInt(tokenCondicion.getTokenValor())) {
+                    if (Integer.parseInt(String.valueOf(atributoRes.getListaValores().get(i))) > Integer.parseInt(tokenCondicion.getTokenValor())) {
                         indices.add(i);
                         return indices;
                     }
@@ -246,7 +237,7 @@ public class Ejecución {
             if (tokenCondicion.getTipo().equals("NUMBER")) {
                 // Recorre todos los valores del atributo
                 for (int i = 0; i < atributoRes.getListaValores().size(); i++) {
-                    if ((int) atributoRes.getListaValores().get(i) >= Integer.parseInt(tokenCondicion.getTokenValor())) {
+                    if (Integer.parseInt(String.valueOf(atributoRes.getListaValores().get(i))) >= Integer.parseInt(tokenCondicion.getTokenValor())) {
                         indices.add(i);
                         return indices;
                     }
@@ -288,18 +279,15 @@ public class Ejecución {
         return indices;
     }
 
-    public DefaultTableModel crearModelo(Tabla tabla, DefaultTableModel modelo) {
+    public DefaultTableModel crearModelo(DefaultTableModel modelo) {
+        
+        String[] nombreColumnas = new String[tablaFinal.getListaAtributos().size()];
 
-        String[] nombreColumnas = new String[tabla.getListaAtributos().size()];
-
-        for (int i = 0; i < tabla.getListaAtributos().size(); i++) {
-            nombreColumnas[i] = tabla.getListaAtributos().get(i).getNombre();
-        }
+        for (int i = 0; i < tablaFinal.getListaAtributos().size(); i++) {
+            nombreColumnas[i] = tablaFinal.getListaAtributos().get(i).getNombre();
+        }       
 
         modelo.setColumnIdentifiers(nombreColumnas);
-
-        //DEBUG
-        System.out.println(indicesFinal);
         
         if (!indicesFinal.isEmpty()) {
             try {
@@ -307,19 +295,20 @@ public class Ejecución {
                 Object[] fila = new Object[modelo.getColumnCount()];
 
                 // Recorre las filas
-                for (int i : indicesFinal) {
-
-                    // DEBUG
-                    System.out.println("REGISTRO ACTUAL: " + i);
+                for (int ind : indicesFinal) {
                     
                     // Recorre los atributos
                     for (int j = 0; j < modelo.getColumnCount(); j++) {
 
-                        fila[j] = tabla.getListaAtributos().get(j).getListaValores().get(i);
+                        fila[j] = tablaFinal.getListaAtributos().get(j).getListaValores().get(ind);
                     }
-                    
-                    modelo.addRow(fila);
 
+                    modelo.addRow(fila);
+                    
+                    // ESCRIBE SOLO 1 FILA SI SE DETECTÓ FUNCIÓN DE AGREGACIÓN
+                    if (indicesFinal.indexOf(ind) == 0 && detectoFuncion == true) {
+                        break;
+                    }
                 }
                 return modelo;
             } catch (Exception ex) {
@@ -331,14 +320,18 @@ public class Ejecución {
 
                 Object[] fila = new Object[modelo.getColumnCount()];
 
-                for (int i = 0; i < tabla.getListaAtributos().get(0).getListaValores().size(); i++) {
+                for (int i = 0; i < tablaFinal.getListaAtributos().get(0).getListaValores().size(); i++) {
 
                     for (int j = 0; j < modelo.getColumnCount(); j++) {
 
-                        fila[j] = tabla.getListaAtributos().get(j).getListaValores().get(i);
+                        fila[j] = tablaFinal.getListaAtributos().get(j).getListaValores().get(i);
                     }
                     modelo.addRow(fila);
-
+                    
+                    // ESCRIBE SOLO 1 FILA SI SE DETECTÓ FUNCIÓN DE AGREGACIÓN
+                    if (i == 0 && detectoFuncion == true) {
+                        break;
+                    }
                 }
                 return modelo;
             } catch (Exception ex) {
@@ -354,39 +347,31 @@ public class Ejecución {
     
     
     public ArrayList realizarOperacion (Cola<Token> operacion, Tabla tablaRes) {
-        ArrayList<Integer> valoresResultado = new ArrayList<Integer>();        
+        ArrayList<Integer> valoresResultado = new ArrayList<>();        
         Cola<Token> operacionNumerica;
         String operacionString;
         int resultado;
-        
-        
-        operacion.imprimirCola();
         
         if (existeID(operacion, tablaRes)) {
             // i ES EL NÚMERO DE REGISTRO ACTUAL
             for (int i = 0 ; i < tablaRes.getListaAtributos().get(0).getListaValores().size() ; i++) {
                 
                 // CAMBIA TODOS LOS IDS POR SU VALOR RESPECTIVO DEL REGISTRO ACTUAL
-                operacionNumerica = cambiar_ID_por_numero(operacion, tablaRes, i);
-            
-                // DEBUG
-                operacionNumerica.imprimirCola();
+                operacionNumerica = cambiar_ID_por_numero(operacion, tablaRes, i);        
                 
-                operacionString = crearStringOperacion(operacionNumerica);
-            
-                // DEBUG
-                System.out.println(operacionString);
-            
+                operacionString = crearStringOperacion(operacionNumerica);         
             
                 InfijasAPosfijas op = new InfijasAPosfijas();
                 resultado = op.operarExpresion(operacionString);
                 valoresResultado.add(resultado); 
             }  
         } else {
-            operacionString = crearStringOperacion(operacion);
-            InfijasAPosfijas op = new InfijasAPosfijas();
-            resultado = op.operarExpresion(operacionString);
-            valoresResultado.add(resultado);
+            for (int i = 0 ; i < tablaRes.getListaAtributos().get(0).getListaValores().size() ; i++) {
+                operacionString = crearStringOperacion(operacion);
+                InfijasAPosfijas op = new InfijasAPosfijas();
+                resultado = op.operarExpresion(operacionString);
+                valoresResultado.add(resultado);
+            }
         }
         return valoresResultado;
     }
@@ -449,6 +434,9 @@ public class Ejecución {
         Atributo atributoRes;
         
         if (identFuncion.equals(Tokenizer.MAX)) {
+            // CAMBIA DETECTOFUNCION PARA QUE SOLO MUESTRE 1 CAMPO
+            this.detectoFuncion = true;
+            
             if (funcion.getSize() != 4) {
                 JOptionPane.showMessageDialog(null, "Se brindó un número erróneo de parámetros para la función", "ERROR",
                             JOptionPane.ERROR_MESSAGE);
@@ -459,6 +447,9 @@ public class Ejecución {
         }
         
         if (identFuncion.equals(Tokenizer.MIN)) {
+            // CAMBIA DETECTOFUNCION PARA QUE SOLO MUESTRE 1 CAMPO
+            this.detectoFuncion = true;
+            
             if (funcion.getSize() != 4) {
                 JOptionPane.showMessageDialog(null, "Se brindó un número erróneo de parámetros para la función", "ERROR",
                             JOptionPane.ERROR_MESSAGE);
@@ -469,6 +460,9 @@ public class Ejecución {
         }
         
         if (identFuncion.equals(Tokenizer.AVG)) {
+            // CAMBIA DETECTOFUNCION PARA QUE SOLO MUESTRE 1 CAMPO
+            this.detectoFuncion = true;
+            
             if (funcion.getSize() != 4) {
                 JOptionPane.showMessageDialog(null, "Se brindó un número erróneo de parámetros para la función", "ERROR",
                             JOptionPane.ERROR_MESSAGE);
@@ -489,7 +483,7 @@ public class Ejecución {
                     Object maximo = encontrarMaximo(atributo.getListaValores());
 
                     Atributo atributoMaximo = new Atributo(Integer.parseInt((String)maximo),tablaRes.getListaAtributos().get(0).getListaValores().size());
-                    atributoMaximo.setNombre("MAX(" + atributo.getNombre() +")");
+                    atributoMaximo.setNombre("MAX(" + atributo.getNombre().toUpperCase() +")");
                 
                     return atributoMaximo;
 //                    tablaFinal.agregarAtributo(atributoMaximo);
@@ -534,7 +528,7 @@ public class Ejecución {
                     Object minimo = encontrarMinimo(atributo.getListaValores());
 
                     Atributo atributoMinimo = new Atributo(Integer.parseInt((String) minimo), tablaRes.getListaAtributos().get(0).getListaValores().size());
-                    atributoMinimo.setNombre("MIN(" + atributo.getNombre() + ")");
+                    atributoMinimo.setNombre("MIN(" + atributo.getNombre().toUpperCase() + ")");
 
                     return atributoMinimo;
                     //tablaFinal.agregarAtributo(atributoMinimo);
@@ -579,7 +573,7 @@ public class Ejecución {
                     double promedio = encontrarPromedio(atributo.getListaValores());
 
                     Atributo atributoPromedio = new Atributo(String.format("%.4f", promedio), tablaRes.getListaAtributos().get(0).getListaValores().size());
-                    atributoPromedio.setNombre("AVG(" + atributo.getNombre()+ ")");
+                    atributoPromedio.setNombre("AVG(" + atributo.getNombre().toUpperCase() + ")");
 
                     return atributoPromedio;
                     //tablaFinal.agregarAtributo(atributoPromedio);
@@ -623,9 +617,9 @@ public class Ejecución {
             for (int j = 0; j < n - i - 1; j++) {
                 if ( Integer.parseInt(String.valueOf(lista.get(j))) >  Integer.parseInt(String.valueOf(lista.get(j + 1)))) {
                     // Intercambiar valores
-                    int temp = Integer.parseInt(String.valueOf(lista.get(j)));
-                    lista.set(j, lista.get(j + 1));
-                    lista.set(j + 1, temp);
+//                    int temp = Integer.parseInt(String.valueOf(lista.get(j)));
+//                    lista.set(j, lista.get(j + 1));
+//                    lista.set(j + 1, temp);
 
                     // Intercambiar índices
                     int tempIndex = indices.get(j);
@@ -652,9 +646,9 @@ public class Ejecución {
             for (int j = 0; j < n - i - 1; j++) {
                 if (Integer.parseInt(String.valueOf(lista.get(j))) < Integer.parseInt(String.valueOf(lista.get(j + 1)))) {
                     // Intercambiar valores
-                    int temp = Integer.parseInt(String.valueOf(lista.get(j)));
-                    lista.set(j, lista.get(j + 1));
-                    lista.set(j + 1, temp);
+//                    int temp = Integer.parseInt(String.valueOf(lista.get(j)));
+//                    lista.set(j, lista.get(j + 1));
+//                    lista.set(j + 1, temp);
 
                     // Intercambiar índices
                     int tempIndex = indices.get(j);
@@ -669,7 +663,15 @@ public class Ejecución {
         return indices;
     }
     
-    
+    public String nombrarOperacion(Inst_Select operacion) { 
+        String nombre = "";
+        
+        for (int i = 0 ; i < operacion.getParamCola().getSize() ; i++) {
+            nombre = nombre + operacion.getParamCola().buscar_por_orden(i).getTokenValor();          
+        }
+        
+        return nombre;
+    }
     
     
     
@@ -693,63 +695,7 @@ public class Ejecución {
      * }
      */
 
-    public DefaultTableModel ejec_2_parametros(Object parametroListaColumnas, String nombreTabla) {
-        DefaultTableModel modelo = new DefaultTableModel();
-
-        Tabla tabla_resultado = null;
-
-        for (Tabla tabla : base) {
-            if (nombreTabla.equals(tabla.getNombreTabla())) {
-                tabla_resultado = tabla;
-            }
-        }
-
-        // No se encontró la tabla
-        if (tabla_resultado == null) {
-            return null;
-        }
-
-        if (parametroListaColumnas == null) {
-            System.out.println("No se identifico al lista de columnas para procesar");
-            return null;
-        }
-
-        // Numero de registros sin where
-        int numRegistros = tabla_resultado.getListaAtributos().size();
-
-        // Aquí el where (fijar número de registros a mostrar)
-
-        // Downcasting
-        Cola<Token> colaColumnasSelect = (Cola<Token>) parametroListaColumnas;
-
-        // Verificar si existen expresiones aritméticas
-        if (buscarAritméticas(parametroListaColumnas)) {
-            String operacion = crearStringOperacion(parametroListaColumnas);
-            InfijasAPosfijas op = new InfijasAPosfijas();
-            int resultado = op.operarExpresion(operacion);
-            colaColumnasSelect = modificarColaColumnas(colaColumnasSelect, resultado);
-
-            // DEBUG
-            colaColumnasSelect.imprimirCola();
-
-            // Se crea un nuevo Atributo para tratar la constante como uno y mantener
-            // uniformidad del modelo
-            // Atributo atConstante = new Atributo(resultado, numRegistros);
-
-        }
-
-        System.out.println(verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado));
-
-        // Si comprobamos que todas las tablas estan OK procedemos a mostrar la tabla
-        // Query
-        if (verificarColumnasEnTabla(colaColumnasSelect, tabla_resultado)) {
-
-            insertarColumnas(colaColumnasSelect, tabla_resultado, modelo);
-
-        }
-
-        return modelo;
-    }
+   
 
     public boolean verificarColumnasEnTabla(Cola<Token> colaColumnasSelect, Tabla tabla_resultado) {
 
