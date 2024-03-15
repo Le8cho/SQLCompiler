@@ -18,7 +18,11 @@ import javax.swing.JOptionPane;
  */
 public class Lector_Datos {
     
+    
     ArrayList <Tabla> baseTablas = new ArrayList<>();
+
+    public Lector_Datos() {
+    }
 
     // OBTIENE LA TABLA BUSCADA POR CÓDIGO
     // Busca la tabla en el array baseTablas con un código que coincida con el proporcionado
@@ -280,8 +284,6 @@ public class Lector_Datos {
             lector.close();
             
             System.out.println("Las tablas han sido creadas exitosamente");
-            
-            iniciarGUI();
             
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Error al leer el archivo (definirRegistro)");

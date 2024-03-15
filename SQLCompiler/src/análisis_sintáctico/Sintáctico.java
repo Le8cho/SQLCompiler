@@ -36,7 +36,7 @@ public class Sintáctico {
     }
     
     //TODO: Excepción diciendo que no cumple la gramática cuando el array es nulo
-    public Object[] parser() {
+    public Lista_Instrucciones parser() {
         
         indexColaTokens = 0;
 

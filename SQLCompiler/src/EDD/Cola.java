@@ -73,7 +73,21 @@ public class Cola<E> {
         }
         size--;
     }
-
+    
+    public void vaciar() {
+        while (!this.estaVacio()) {
+            //Si la cola no es de un solo elemento
+            if (this.cabeza.getSiguiente() != null) {
+                NodoCola nodo = this.cabeza;
+                this.cabeza = this.cabeza.getSiguiente();
+                nodo.setSiguiente(null);
+            } else {
+                this.cabeza = null;
+            }
+        }
+        size = 0;  
+    }
+    
     public boolean buscar(E dato) {
 
         if (this.estaVacio()) {
